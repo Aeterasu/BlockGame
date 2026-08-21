@@ -1,0 +1,61 @@
+cmake_minimum_required(VERSION 3.20)
+project(BlockGame LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_SOURCE_DIR}/src/*.cpp
+)
+
+add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+target_compile_options(${PROJECT_NAME} PRIVATE
+    -Wall -Wextra -Wpedantic
+)
+
+if(EMSCRIPTEN)
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
+
+    target_compile_options(${PROJECT_NAME} PRIVATE -sUSE_SDL=2)
+
+    set(SHELL_FILE ${CMAKE_SOURCE_DIR}/web/shell.html)
+
+    target_link_options(${PROJECT_NAME} PRIVATE
+        -sUSE_SDL=2
+        -sALLOW_MEMORY_GROWTH=1
+        -sASYNCIFY
+        -sNO_EXIT_RUNTIME=1
+        --shell-file ${SHELL_FILE}
+        $<$<TARGET_EXISTS:${PROJECT_NAME}>:>
+    )
+    
+    if(EXISTS ${CMAKE_SOURCE_DIR}/assets)
+        target_link_options(${PROJECT_NAME} PRIVATE
+            --preload-file ${CMAKE_SOURCE_DIR}/assets@assets
+        )
+    endif()
+
+else()   
+    find_package(SDL2 REQUIRED)
+
+    target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
+
+    if(TARGET SDL2::SDL2)
+        target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2)
+        if(TARGET SDL2::SDL2main)
+            target_link_libraries(${PROJECT_NAME} PRIVATE SDL2::SDL2main)
+        endif()
+    else()
+        # fallback for older distro SDL2 config that only sets variables
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
+    endif()
+  
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/assets
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
+    )
+endif()
