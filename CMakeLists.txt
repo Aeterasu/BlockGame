@@ -40,7 +40,7 @@ if(EMSCRIPTEN)
 
 else()   
     find_package(SDL2 REQUIRED)
-
+		find_package(SDL2_image REQUIRED)
     target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
 
     if(TARGET SDL2::SDL2)
@@ -51,6 +51,12 @@ else()
     else()
         # fallback for older distro SDL2 config that only sets variables
         target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
+    endif()
+
+		if(TARGET SDL2_image::SDL2_image)
+        target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image::SDL2_image)
+    else()
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
     endif()
   
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
