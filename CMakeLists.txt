@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.20)
-project(BlockGame LANGUAGES CXX)
+project(BlockGame LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,7 +19,11 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
-    target_compile_options(${PROJECT_NAME} PRIVATE -sUSE_SDL=2)
+    target_compile_options(${PROJECT_NAME} PRIVATE
+        -sUSE_SDL=2
+        -sUSE_WEBGL2=1
+        -sFULL_ES3=1
+    )
 
     set(SHELL_FILE ${CMAKE_SOURCE_DIR}/web/shell.html)
 
@@ -28,19 +32,23 @@ if(EMSCRIPTEN)
         -sALLOW_MEMORY_GROWTH=1
         -sASYNCIFY
         -sNO_EXIT_RUNTIME=1
+        -sUSE_WEBGL2=1
+        -sMIN_WEBGL_VERSION=2
+        -sMAX_WEBGL_VERSION=2
+        -sFULL_ES3=1
         --shell-file ${SHELL_FILE}
         $<$<TARGET_EXISTS:${PROJECT_NAME}>:>
     )
-    
+
     if(EXISTS ${CMAKE_SOURCE_DIR}/assets)
         target_link_options(${PROJECT_NAME} PRIVATE
             --preload-file ${CMAKE_SOURCE_DIR}/assets@assets
         )
     endif()
 
-else()   
+else()
     find_package(SDL2 REQUIRED)
-		find_package(SDL2_image REQUIRED)
+    find_package(SDL2_image REQUIRED)
     target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
 
     if(TARGET SDL2::SDL2)
@@ -53,12 +61,20 @@ else()
         target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
     endif()
 
-		if(TARGET SDL2_image::SDL2_image)
+    if(TARGET SDL2_image::SDL2_image)
         target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image::SDL2_image)
     else()
         target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
     endif()
-  
+
+    # Desktop GL 3.3 core needs a runtime loader - GLES/WebGL doesn't.
+    # Generate this once with:
+    #   pip install --user glad2
+    #   python3 -m glad --api gl:core=3.3 --out-path external/glad c
+    add_library(glad STATIC external/glad/src/gl.c)
+    target_include_directories(glad PUBLIC external/glad/include)
+    target_link_libraries(${PROJECT_NAME} PRIVATE glad)
+
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/assets
