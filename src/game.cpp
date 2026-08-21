@@ -2,11 +2,11 @@
 
 #include <stdio.h>
 
-namespace BlockGame
+namespace blockgame
 {
     void Game::init()
     {
         Grid grid;
         fprintf(stderr, "Game initialized!");
     }
-} // namespace BlockGame
+} // namespace blockgame

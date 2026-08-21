@@ -61,16 +61,6 @@ else()
         target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
     endif()
 
-    if(TARGET SDL2_image::SDL2_image)
-        target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image::SDL2_image)
-    else()
-        target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
-    endif()
-
-    # Desktop GL 3.3 core needs a runtime loader - GLES/WebGL doesn't.
-    # Generate this once with:
-    #   pip install --user glad2
-    #   python3 -m glad --api gl:core=3.3 --out-path external/glad c
     add_library(glad STATIC external/glad/src/gl.c)
     target_include_directories(glad PUBLIC external/glad/include)
     target_link_libraries(${PROJECT_NAME} PRIVATE glad)

@@ -17,13 +17,14 @@
 
 namespace
 {
-
     SDL_Window* window = nullptr;
     SDL_GLContext glContext = nullptr;
     GLuint shaderProgram = 0;
     GLuint vao = 0;
 
     bool running = true;
+
+    blockgame::Game game;
 
     std::string LoadFileAsString(const std::string& path)
     {
@@ -78,7 +79,7 @@ namespace
 #ifdef __EMSCRIPTEN__
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttrbiute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 #else
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -86,7 +87,7 @@ namespace
 #endif
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-        window = SDL_CreateWindow("BlockGame", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 270, 270,
+        window = SDL_CreateWindow("blockgame", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 270, 270,
                                   SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
         if (window == nullptr)
@@ -164,7 +165,7 @@ namespace
 
     bool InitGame()
     {
-        BlockGame::Game game;
+
         game.init();
 
         return true;
@@ -192,8 +193,8 @@ namespace
 
 #ifdef __EMSCRIPTEN__
         if (!running)
-        {:
-								emscripten_cancel_main_loop();
+        {
+            emscripten_cancel_main_loop();
         }
 #endif
     }
@@ -214,7 +215,7 @@ int main()
 
     InitGame();
 
-#ifdef __EMSCRIPTER__
+#ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(Tick, 0, 1);
 #else
     while (running)

@@ -1,16 +1,20 @@
-#include <vector>
+#pragma once
+
 #include "block.h"
 
-namespace BlockGame
+#include <vector>
+
+namespace blockgame
 {
-	struct Grid
-	{
-		static constexpr Vec2i GRID_SIZE = Vec2i{8, 8};
+    struct Grid
+    {
+        static constexpr Vec2i GRID_SIZE = Vec2i{8, 8};
 
-		std::vector<Block> blocks;
+        std::vector<Block> blocks;
 
-		Block& get_at(Vec2i position){
-			return blocks[position.y * GRID_SIZE.y + position.x];
-		}
-	};
-}
+        Block& get_at(Vec2i position)
+        {
+            return blocks[position.y * GRID_SIZE.y + position.x];
+        }
+    };
+} // namespace blockgame

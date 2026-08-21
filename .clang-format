@@ -35,7 +35,7 @@ SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 
 # C++
-Standard: c++20
+Standard: c++17
 Cpp11BracedListStyle: true
 
 # Classes
@@ -50,6 +50,6 @@ BreakBeforeBinaryOperators: None
 SpaceBeforeAssignmentOperators: true
 
 # Constructors
-BreakConstructorInitializers: BeforeComma
+BreakConstructorInitializers: AfterColon
 ConstructorInitializerIndentWidth: 4
 PackConstructorInitializers: BinPack

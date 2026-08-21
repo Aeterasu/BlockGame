@@ -1,11 +1,13 @@
+#pragma once
+
 #include "grid.h"
 
-namespace BlockGame
+namespace blockgame
 {
-	struct Game
-	{
-		Grid grid;
-		
-		void init();
-	};
-}
+    struct Game
+    {
+        Grid grid;
+
+        void init();
+    };
+} // namespace blockgame
