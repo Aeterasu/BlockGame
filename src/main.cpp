@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <SDL_image.h>
 #include <SDL_video.h>
 
 #ifdef __EMSCRIPTEN__
@@ -11,67 +12,52 @@
 #include "game.h"
 
 #include <cstdio>
-#include <fstream>
-#include <sstream>
-#include <string>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace
 {
     SDL_Window* window = nullptr;
     SDL_GLContext glContext = nullptr;
-    GLuint shaderProgram = 0;
-    GLuint vao = 0;
+    GLuint quadVao = 0;
+    glm::mat4 projection{1.0f};
 
     bool running = true;
 
+    std::vector<blockgame::Sprite> sprites;
+
     blockgame::Game game;
 
-    std::string LoadFileAsString(const std::string& path)
+    void InitQuad()
     {
-        std::ifstream file(path);
-        if (!file)
-        {
-            std::fprintf(stderr, "Failed to open file: %s\n", path.c_str());
-            return "";
-        }
-        std::stringstream buffer;
-        buffer << file.rdbuf();
-        return buffer.str();
-    }
+        // clang-format off
+				float vertices[] = 
+				{
+						0.0f, 1.0f, 0.0f, 1.0f,
+						1.0f, 0.0f, 1.0f, 0.0f,
+						0.0f, 0.0f, 0.0f, 0.0f,
 
-#ifdef __EMSCRIPTEN__
-    constexpr const char* kShaderHeader = "#version 300 es\nprecision mediump float;\n";
-#else
-    constexpr const char* kShaderHeader = "#version 330 core\n";
-#endif
+						0.0f, 1.0f, 0.0f, 1.0f,
+						1.0f, 1.0f, 1.0f, 1.0f,
+						1.0f, 0.0f, 1.0f, 0.0f,
+				};
+        // clang-format on
 
-    GLuint CompileShader(GLenum type, const std::string& path)
-    {
-        std::string body = LoadFileAsString(path);
-        if (body.empty())
-        {
-            return 0;
-        }
+        GLuint vbo = 0;
+        glGenVertexArrays(1, &quadVao);
+        glGenBuffers(1, &vbo);
 
-        std::string source = std::string(kShaderHeader) + body;
-        const char* src = source.c_str();
+        glBindVertexArray(quadVao);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
-        GLuint shader = glCreateShader(type);
-        glShaderSource(shader, 1, &src, nullptr);
-        glCompileShader(shader);
+        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+        glEnableVertexAttribArray(1);
 
-        GLint success = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-        if (!success)
-        {
-            char log[512];
-            glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-            std::fprintf(stderr, "Shader compile error: %s\n", log);
-            return 0;
-        }
-
-        return shader;
+        glBindVertexArray(0);
     }
 
     bool InitGL()
@@ -114,51 +100,12 @@ namespace
         std::fprintf(stderr, "GL Version: %s\n", glGetString(GL_VERSION));
         std::fprintf(stderr, "GL Renderer: %s\n", glGetString(GL_RENDERER));
 
-        GLuint vs = CompileShader(GL_VERTEX_SHADER, "assets/shaders/triangle.vertex.glsl");
-        GLuint fs = CompileShader(GL_FRAGMENT_SHADER, "assets/shaders/triangle.fragment.glsl");
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        if (!vs || !fs)
-        {
-            return false;
-        }
+        InitQuad();
 
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vs);
-        glAttachShader(shaderProgram, fs);
-        glLinkProgram(shaderProgram);
-
-        GLint linked = 0;
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linked);
-
-        if (!linked)
-        {
-            char log[512];
-            glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log);
-            std::fprintf(stderr, "Shader link error: %s\n", log);
-            return false;
-        }
-
-        glDeleteShader(vs);
-        glDeleteShader(fs);
-
-        float vertices[] = {
-            0.0f, 0.5f, 1.0f, 0.0f, 0.0f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-        };
-
-        GLuint vbo = 0;
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-
-        glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
-        glEnableVertexAttribArray(1);
-
-        glBindVertexArray(0);
+        projection = glm::ortho(0.0f, 270.0f, 270.0f, 0.0f, -1.0f, 1.0f);
 
         return true;
     }
@@ -167,6 +114,8 @@ namespace
     {
 
         game.init();
+
+        sprites.push_back(game.gridSprite);
 
         return true;
     }
@@ -185,9 +134,10 @@ namespace
         glClearColor(0.11444f, 0.09531f, 0.07819f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glUseProgram(shaderProgram);
-        glBindVertexArray(vao);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        for (const blockgame::Sprite& sprite : sprites)
+        {
+            blockgame::DrawSprite(sprite, projection, quadVao);
+        }
 
         SDL_GL_SwapWindow(window);
 

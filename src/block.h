@@ -1,10 +1,11 @@
 #pragma once
 
-#include "types.h"
+#include <cstdint>
+#include <glm/glm.hpp>
 
 namespace blockgame
 {
-    enum class Color : uint8
+    enum class BlockType : std::int8_t
     {
         NONE = 0,
         RED = 1,
@@ -14,7 +15,7 @@ namespace blockgame
 
     struct Block
     {
-        Vec2i position;
-        Color color;
+        glm::ivec2 position;
+        BlockType type;
     };
 } // namespace blockgame

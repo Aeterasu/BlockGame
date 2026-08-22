@@ -9,8 +9,18 @@ file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/src/*.cpp
 )
 
+include(FetchContent)
+FetchContent_Declare(
+    glm
+    GIT_REPOSITORY https://github.com/g-truc/glm.git
+    GIT_TAG        1.0.1
+)
+FetchContent_MakeAvailable(glm)
+
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/src)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE glm::glm)
 
 target_compile_options(${PROJECT_NAME} PRIVATE
     -Wall -Wextra -Wpedantic
@@ -59,6 +69,12 @@ else()
     else()
         # fallback for older distro SDL2 config that only sets variables
         target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
+    endif()
+
+    if(TARGET SDL2_image::SDL2_image)
+        target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_image::SDL2_image)
+    else()
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
     endif()
 
     add_library(glad STATIC external/glad/src/gl.c)
