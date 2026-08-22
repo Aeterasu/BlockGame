@@ -9,8 +9,11 @@ namespace blockgame
     {
         Grid grid;
         Sprite gridSprite;
+        Sprite blockSprite;
         Texture gridTexture;
+        Texture blockTexture;
         Shader spriteShader;
+        Shader blockShader;
 
         void init();
     };

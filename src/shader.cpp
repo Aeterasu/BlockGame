@@ -1,7 +1,6 @@
 #include "shader.h"
 
 #include "file.h"
-#include "glad/gl.h"
 
 #include <glm/gtc/type_ptr.hpp>
 

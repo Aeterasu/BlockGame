@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include <SDL_image.h>
+#include <SDL2/SDL_image.h>
 #include <SDL_video.h>
 
 #ifdef __EMSCRIPTEN__
@@ -112,10 +112,11 @@ namespace
 
     bool InitGame()
     {
-
         game.init();
 
         sprites.push_back(game.gridSprite);
+
+        sprites.push_back(game.blockSprite);
 
         return true;
     }

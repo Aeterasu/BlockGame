@@ -1,7 +1,12 @@
 #pragma once
 
-#include <SDL_image.h>
-#include <glad/gl.h>
+#include <SDL2/SDL_image.h>
+#ifdef __EMSCRIPTEN__
+    #include <GLES3/gl3.h>
+#else
+    #include <glad/gl.h>
+#endif
+
 #include <string>
 
 namespace blockgame

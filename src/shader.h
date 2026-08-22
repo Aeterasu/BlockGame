@@ -1,8 +1,13 @@
 #pragma once
 
-#include <glad/gl.h>
 #include <glm/glm.hpp>
 #include <string>
+
+#ifdef __EMSCRIPTEN__
+    #include <GLES3/gl3.h>
+#else
+    #include <glad/gl.h>
+#endif
 
 namespace blockgame
 {
