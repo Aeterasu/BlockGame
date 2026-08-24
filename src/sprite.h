@@ -7,6 +7,8 @@
 
 namespace blockgame
 {
+    using SpriteHandle = std::uint32_t;
+
     struct Sprite
     {
         glm::vec2 position{0.0f, 0.0f};

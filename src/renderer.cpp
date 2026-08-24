@@ -2,7 +2,6 @@
 
 #include "sprite.h"
 
-#include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -10,6 +9,7 @@
 namespace blockgame
 {
     Renderer renderer;
+
     bool Renderer::InitGL()
     {
 #ifdef __EMSCRIPTEN__
@@ -90,19 +90,40 @@ namespace blockgame
 
         glBindVertexArray(0);
     }
-    void Renderer::AddSprite(const Sprite& sprite)
+
+    SpriteHandle Renderer::AddSprite(const Sprite& sprite)
     {
+        SpriteHandle h = nextHandle++;
         activeSprites.push_back(sprite);
+        handles.push_back(h);
+
+        std::fprintf(stderr, "Added sprite, sprite handle: %d\n", h);
+
+        return h;
     }
 
-    void Renderer::RemoveSprite(const Sprite& sprite)
+    void Renderer::RemoveSprite(SpriteHandle handle)
     {
-        auto it = std::find_if(activeSprites.begin(), activeSprites.end(),
-                               [&sprite](const Sprite& current) { return &current == &sprite; });
-
-        if (it != activeSprites.end())
+        for (size_t i = 0; i < handles.size(); i++)
         {
-            activeSprites.erase(it);
+            if (handles[i] == handle)
+            {
+                activeSprites.erase(activeSprites.begin() + i);
+                handles.erase(handles.begin() + i);
+                return;
+            }
+        }
+    }
+
+    void Renderer::UpdateSprite(SpriteHandle handle, const Sprite& sprite)
+    {
+        for (size_t i = 0; i < handles.size(); i++)
+        {
+            if (handles[i] == handle)
+            {
+                activeSprites[i] = sprite;
+                return;
+            }
         }
     }
 

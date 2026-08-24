@@ -1,5 +1,6 @@
 #include "game.h"
 #include "renderer.h"
+#include "shader_storage.h"
 #include "texture_storage.h"
 
 #include <SDL2/SDL.h>
@@ -63,6 +64,7 @@ int main()
     }
 
     blockgame::InitTextureStorage();
+    blockgame::InitShaderStorage();
 
     InitGame();
 

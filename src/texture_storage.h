@@ -11,7 +11,7 @@ namespace blockgame
         Texture block;
     };
 
-    extern TextureStorage texture_storage;
+    extern TextureStorage textureStorage;
 
     void InitTextureStorage();
 } // namespace blockgame

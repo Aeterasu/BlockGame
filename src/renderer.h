@@ -12,13 +12,18 @@ namespace blockgame
     {
         SDL_Window* window = nullptr;
         SDL_GLContext glContext = nullptr;
+
         std::vector<Sprite> activeSprites;
+        std::vector<SpriteHandle> handles;
+
+        SpriteHandle nextHandle = 0;
 
         GLuint quadVao = 0;
         glm::mat4 projection{1.0f};
 
-        void AddSprite(const Sprite& sprite);
-        void RemoveSprite(const Sprite& sprite);
+        SpriteHandle AddSprite(const Sprite& sprite);
+        void RemoveSprite(SpriteHandle handle);
+        void UpdateSprite(SpriteHandle handle, const Sprite& sprite);
 
         void InitQuad();
 
