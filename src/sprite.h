@@ -16,6 +16,8 @@ namespace blockgame
         float rotation = 0.0f;
         glm::vec4 tint{1.0f, 1.0f, 1.0f, 1.0f};
 
+        std::int32_t zIndex = 0;
+
         const Texture* texture = nullptr;
         const Shader* shader = nullptr;
     };

@@ -2,9 +2,11 @@
 
 #include "sprite.h"
 
+#include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <numeric>
 
 namespace blockgame
 {
@@ -129,12 +131,17 @@ namespace blockgame
 
     void Renderer::DrawFrame()
     {
-        glClearColor(0.11444f, 0.09531f, 0.07819f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        for (Sprite& sprite : activeSprites)
+        std::vector<size_t> drawOrder(activeSprites.size());
+        std::iota(drawOrder.begin(), drawOrder.end(), 0);
+        std::sort(drawOrder.begin(), drawOrder.end(),
+                  [&](size_t a, size_t b) { return activeSprites[a].zIndex < activeSprites[b].zIndex; });
+
+        for (size_t i : drawOrder)
         {
-            blockgame::DrawSprite(sprite, projection, quadVao);
+            blockgame::DrawSprite(activeSprites[i], projection, quadVao);
         }
     }
 
