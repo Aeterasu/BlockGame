@@ -1,5 +1,6 @@
 #include "game.h"
 
+#include "gl_compatibility.h"
 #include "renderer.h"
 
 #include <stdio.h>

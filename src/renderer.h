@@ -2,6 +2,7 @@
 
 #include "sprite.h"
 
+#include <SDL2/SDL.h>
 #include <glm/glm.hpp>
 #include <vector>
 

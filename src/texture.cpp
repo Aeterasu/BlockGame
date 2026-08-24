@@ -1,5 +1,7 @@
 #include "texture.h"
 
+#include <SDL_image.h>
+
 namespace blockgame
 {
     Texture LoadTexture(const std::string& path)
