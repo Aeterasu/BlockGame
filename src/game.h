@@ -7,14 +7,14 @@ namespace blockgame
 {
     struct Game
     {
+        std::vector<Sprite> blockSprites;
+        Texture blockTexture;
+
         Grid grid;
         Sprite gridSprite;
-        Sprite blockSprite;
         Texture gridTexture;
-        Texture blockTexture;
-        Shader spriteShader;
-        Shader blockShader;
 
+        Shader spriteShader;
         void init();
     };
 } // namespace blockgame

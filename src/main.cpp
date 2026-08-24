@@ -1,5 +1,6 @@
 #include "game.h"
 #include "renderer.h"
+#include "texture_storage.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
@@ -53,11 +54,15 @@ int main()
         std::fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
     }
 
-    if (!blockgame::renderer.InitGL())
+    bool gl = blockgame::renderer.InitGL();
+
+    if (!gl)
     {
         SDL_Quit();
         return -1;
     }
+
+    blockgame::InitTextureStorage();
 
     InitGame();
 

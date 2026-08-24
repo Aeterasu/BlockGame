@@ -1,8 +1,9 @@
 #include "game.h"
 
-#include "gl_compatibility.h"
 #include "renderer.h"
+#include "texture_storage.h"
 
+#include <cstdint>
 #include <stdio.h>
 
 namespace blockgame
@@ -11,22 +12,35 @@ namespace blockgame
     {
         gridSprite.size = glm::vec2(270.0f, 270.0f);
 
-        gridTexture = LoadTexture("assets/textures/texture_grid.png");
+        gridTexture = texture_storage.grid;
         gridSprite.texture = &gridTexture;
 
         spriteShader = LoadShader("assets/shaders/sprite.vertex.glsl", "assets/shaders/sprite.fragment.glsl");
         gridSprite.shader = &spriteShader;
 
-        blockSprite.position = glm::vec2(135.0f, 135.0f);
-        blockSprite.size = glm::vec2(26.0f, 26.0f);
+        const std::uint8_t BLOCKS_COUNT = 64;
 
-        blockTexture = LoadTexture("assets/textures/texture_block.png");
-        blockSprite.texture = &blockTexture;
-
-        blockSprite.shader = &spriteShader;
-
+        blockSprites.reserve(BLOCKS_COUNT);
+        blockTexture = texture_storage.block;
         renderer.AddSprite(gridSprite);
-        renderer.AddSprite(blockSprite);
+
+        for (int i = 0; i < BLOCKS_COUNT; i++)
+        {
+            Sprite sprite;
+            sprite.position = glm::vec2(38.0f + (i % 8) * 23.0f, 39.0f + (i / 8) * 23.0f);
+            sprite.size = glm::vec2(26.0f, 26.0f);
+
+            sprite.texture = &blockTexture;
+
+            sprite.shader = &spriteShader;
+
+            blockSprites.push_back(sprite);
+        }
+
+        for (auto& s : blockSprites)
+        {
+            renderer.AddSprite(s);
+        }
 
         fprintf(stderr, "Game initialized!");
     }
