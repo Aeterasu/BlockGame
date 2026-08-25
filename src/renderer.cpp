@@ -136,8 +136,8 @@ namespace blockgame
 
         std::vector<size_t> drawOrder(activeSprites.size());
         std::iota(drawOrder.begin(), drawOrder.end(), 0);
-        std::sort(drawOrder.begin(), drawOrder.end(),
-                  [&](size_t a, size_t b) { return activeSprites[a].zIndex < activeSprites[b].zIndex; });
+        std::stable_sort(drawOrder.begin(), drawOrder.end(),
+                         [&](size_t a, size_t b) { return activeSprites[a].zIndex < activeSprites[b].zIndex; });
 
         for (size_t i : drawOrder)
         {

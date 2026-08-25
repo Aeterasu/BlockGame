@@ -1,10 +1,13 @@
+#include "color.h"
 #include "game.h"
+#include "pico_palette.h"
 #include "renderer.h"
 #include "shader_storage.h"
 #include "texture_storage.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL_timer.h>
 #include <SDL_video.h>
 #include <cstdio>
 #include <glm/glm.hpp>
@@ -15,11 +18,15 @@ namespace
 {
     bool running = true;
 
+    std::uint64_t lastTicks = 0;
+    constexpr double targetFps = 60.0f;
+    constexpr double fixedDeltaTime = 1.0 / targetFps;
+
     blockgame::Game game;
 
     bool InitGame()
     {
-        game.init();
+        game.Init();
 
         return true;
     }
@@ -35,6 +42,19 @@ namespace
             }
         }
 
+        std::uint64_t now = SDL_GetPerformanceCounter();
+        double deltaTime = (double)(now - lastTicks) / (double)SDL_GetPerformanceFrequency();
+        lastTicks = now;
+
+        static double accumulator = 0.0;
+        accumulator += deltaTime;
+
+        while (accumulator >= fixedDeltaTime)
+        {
+            game.Tick(fixedDeltaTime);
+            accumulator -= fixedDeltaTime;
+        }
+
         blockgame::renderer.DrawFrame();
 
         SDL_GL_SwapWindow(blockgame::renderer.window);
@@ -47,6 +67,18 @@ namespace
 #endif
     }
 } // namespace
+
+void CreateGlobalVisuals()
+{
+    blockgame::Sprite border;
+    border.size = glm::vec2(270.0f, 270.0f);
+    border.texture = &blockgame::textureStorage.border;
+    border.shader = &blockgame::shaderStorage.spriteShader;
+    border.zIndex = 999;
+    blockgame::Color grey = blockgame::PICO_GREY;
+    border.tint = glm::vec4(grey.r, grey.g, grey.b, 1.0);
+    blockgame::renderer.AddSprite(border);
+}
 
 int main()
 {
@@ -65,6 +97,8 @@ int main()
 
     blockgame::InitTextureStorage();
     blockgame::InitShaderStorage();
+
+    CreateGlobalVisuals(); // border and other screen space stuff we may have
 
     InitGame();
 

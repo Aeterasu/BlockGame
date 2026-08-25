@@ -5,17 +5,11 @@
 
 namespace blockgame
 {
-    enum class BlockType : std::int8_t
+    enum class Block : std::int8_t
     {
         NONE = 0,
         RED = 1,
         BLUE = 2,
         GREEN = 3,
-    };
-
-    struct Block
-    {
-        glm::ivec2 position;
-        BlockType type;
     };
 } // namespace blockgame

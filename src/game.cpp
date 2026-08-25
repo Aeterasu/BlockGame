@@ -8,23 +8,85 @@
 
 namespace blockgame
 {
-    void Game::init()
+    void Game::Init()
     {
-        Sprite g;
-        g.size = glm::vec2(270.0f, 270.0f);
-        g.texture = &textureStorage.grid;
-        g.shader = &shaderStorage.spriteShader;
-        gridSprite = renderer.AddSprite(g);
+        Sprite grid;
+        grid.size = glm::vec2(270.0f, 270.0f);
+        grid.texture = &textureStorage.grid;
+        grid.shader = &shaderStorage.spriteShader;
+        grid.zIndex = -999999;
+        gridSpriteHandle = renderer.AddSprite(grid);
 
-        Sprite border;
-        border.size = glm::vec2(270.0f, 270.0f);
-        border.texture = &textureStorage.border;
-        border.shader = &shaderStorage.spriteShader;
-        border.zIndex = 999;
-        Color grey = PICO_GREY;
-        border.tint = glm::vec4(grey.r, grey.g, grey.b, 1.0);
-        renderer.AddSprite(border);
+        for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
+        {
+            blocks.push_back(Block::NONE);
+
+            blockSprite.size = glm::vec2(26.0f, 26.0f);
+            blockSprite.texture = &textureStorage.block;
+            blockSprite.shader = &shaderStorage.spriteShader;
+            blockSpriteHandles.push_back(renderer.AddSprite(blockSprite));
+
+            glm::ivec2 pos = IdToGridPosition(i);
+
+            UpdateBlock(pos, Block::RED);
+        }
+
+        blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
 
         std::fprintf(stderr, "Game initialized!");
+    }
+
+    void Game::Tick(const double delta)
+    {
+        blockSpawnTimeRemaining -= delta;
+
+        return;
+
+        if (blockSpawnTimeRemaining <= 0.0)
+        {
+            UpdateBlock(glm::ivec2{0, 0}, Block::RED);
+            blockSpawnTimeRemaining = 999;
+        }
+    }
+
+    void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
+    {
+        auto id = GridPositionToId(gridPosition);
+
+        blocks.at(id) = newState;
+
+        blockSprite.position = GridPositionToRealPosition(gridPosition);
+
+        switch (newState)
+        {
+        case Block::RED:
+            blockSprite.tint = Vec4FromColor(PICO_RED);
+            break;
+        case Block::BLUE:
+            blockSprite.tint = Vec4FromColor(PICO_BLUE);
+            break;
+        case Block::GREEN:
+            blockSprite.tint = Vec4FromColor(PICO_GREEN);
+            break;
+        default:
+            blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
+        }
+
+        renderer.UpdateSprite(blockSpriteHandles.at(id), blockSprite);
+    }
+
+    glm::vec2 Game::GridPositionToRealPosition(const glm::ivec2 gridPosition)
+    {
+        return glm::vec2(41.0f + gridPosition.x * 23.0f, 41.0f + gridPosition.y * 23.0f);
+    }
+
+    size_t Game::GridPositionToId(const glm::ivec2 gridPosition)
+    {
+        return gridPosition.y * GRID_SIZE.x + gridPosition.x;
+    }
+
+    glm::ivec2 Game::IdToGridPosition(const size_t id)
+    {
+        return glm::ivec2(id % GRID_SIZE.x, id / GRID_SIZE.x);
     }
 } // namespace blockgame
