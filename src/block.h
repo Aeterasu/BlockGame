@@ -5,7 +5,7 @@
 
 namespace blockgame
 {
-    enum class Block : std::int8_t
+    enum class Block : std::uint8_t
     {
         NONE = 0,
         RED = 1,

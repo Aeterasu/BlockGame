@@ -3,6 +3,7 @@
 #include "color.h"
 #include "pico_palette.h"
 #include "renderer.h"
+#include "rng.h"
 #include "shader_storage.h"
 #include "texture_storage.h"
 
@@ -28,7 +29,7 @@ namespace blockgame
 
             glm::ivec2 pos = IdToGridPosition(i);
 
-            UpdateBlock(pos, Block::RED);
+            UpdateBlock(pos, (blockgame::Block)(1 + Random_NextByte() % 3));
         }
 
         blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
