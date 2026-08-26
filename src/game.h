@@ -17,10 +17,15 @@ namespace blockgame
         std::vector<Block> blocks;
         std::vector<SpriteHandle> blockSpriteHandles;
 
+        glm::ivec2 currentCursorPosition{0, GRID_SIZE.y - 1};
+
         Sprite blockSprite;
         SpriteHandle blockSpriteHandle;
 
         SpriteHandle gridSpriteHandle;
+
+        Sprite cursorSprite;
+        SpriteHandle cursorSpriteHandle;
 
         void Init();
         void Tick(const double delta);
@@ -29,5 +34,7 @@ namespace blockgame
         glm::vec2 GridPositionToRealPosition(const glm::ivec2 gridPosition);
         size_t GridPositionToId(const glm::ivec2 gridPosition);
         glm::ivec2 IdToGridPosition(const size_t id);
+
+        void MoveCursor(const glm::ivec2 dir);
     };
 } // namespace blockgame

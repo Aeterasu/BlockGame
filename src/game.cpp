@@ -7,6 +7,7 @@
 #include "shader_storage.h"
 #include "texture_storage.h"
 
+#include <SDL2/SDL.h>
 #include <iostream>
 
 namespace blockgame
@@ -34,6 +35,12 @@ namespace blockgame
             UpdateBlock(pos, Block::NONE);
         }
 
+        cursorSprite.size = glm::vec2(26.0f, 26.0f);
+        cursorSprite.texture = &textureStorage.cursor;
+        cursorSprite.shader = &shaderStorage.spriteShader;
+        cursorSprite.zIndex = 4096;
+        cursorSpriteHandle = renderer.AddSprite(cursorSprite);
+
         blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
 
         std::fprintf(stderr, "Game initialized!");
@@ -45,13 +52,17 @@ namespace blockgame
 
         if (blockSpawnTimeRemaining <= 0.0)
         {
-            std::cout << "MEOW" << "\n";
             int32_t x = (Random_NextByte() % 8);
             int32_t y = (Random_NextByte() % 8);
             UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
 
             blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
         }
+
+        // cursor
+
+        cursorSprite.position = GridPositionToRealPosition(currentCursorPosition);
+        renderer.UpdateSprite(cursorSpriteHandle, cursorSprite);
     }
 
     void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
@@ -85,7 +96,7 @@ namespace blockgame
 
     glm::vec2 Game::GridPositionToRealPosition(const glm::ivec2 gridPosition)
     {
-        return glm::vec2(41.0f + gridPosition.x * 23.0f, 41.0f + gridPosition.y * 23.0f);
+        return glm::vec2(39.0f + gridPosition.x * 23.0f, 41.0f + gridPosition.y * 23.0f);
     }
 
     size_t Game::GridPositionToId(const glm::ivec2 gridPosition)
@@ -96,5 +107,12 @@ namespace blockgame
     glm::ivec2 Game::IdToGridPosition(const size_t id)
     {
         return glm::ivec2(id % GRID_SIZE.x, id / GRID_SIZE.x);
+    }
+
+    void Game::MoveCursor(const glm::ivec2 dir)
+    {
+        currentCursorPosition += dir;
+        currentCursorPosition.x = std::clamp(currentCursorPosition.x, 0, GRID_SIZE.x - 1);
+        currentCursorPosition.y = std::clamp(currentCursorPosition.y, 0, GRID_SIZE.y - 1);
     }
 } // namespace blockgame

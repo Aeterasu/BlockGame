@@ -40,6 +40,35 @@ namespace
             {
                 running = false;
             }
+            else if (event.type == SDL_KEYDOWN)
+            {
+                if (event.key.repeat == 0)
+                {
+                    if (event.key.keysym.sym == SDLK_ESCAPE)
+                    {
+                        running = false;
+                    }
+                    else
+                    {
+
+                        switch (event.key.keysym.sym)
+                        {
+                        case SDLK_w:
+                            game.MoveCursor(glm::ivec2(0, -1));
+                            break;
+                        case SDLK_s:
+                            game.MoveCursor(glm::ivec2(0, 1));
+                            break;
+                        case SDLK_a:
+                            game.MoveCursor(glm::ivec2(-1, 0));
+                            break;
+                        case SDLK_d:
+                            game.MoveCursor(glm::ivec2(1, 0));
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         std::uint64_t now = SDL_GetPerformanceCounter();
@@ -74,7 +103,7 @@ void CreateGlobalVisuals()
     border.size = glm::vec2(270.0f, 270.0f);
     border.texture = &blockgame::textureStorage.border;
     border.shader = &blockgame::shaderStorage.spriteShader;
-    border.zIndex = 999;
+    border.zIndex = 999999;
     blockgame::Color grey = blockgame::PICO_GREY;
     border.tint = glm::vec4(grey.r, grey.g, grey.b, 1.0);
     blockgame::renderer.AddSprite(border);
