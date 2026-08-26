@@ -95,6 +95,8 @@ int main()
         return -1;
     }
 
+    lastTicks = SDL_GetPerformanceCounter();
+
     blockgame::InitTextureStorage();
     blockgame::InitShaderStorage();
 

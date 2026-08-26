@@ -7,6 +7,8 @@
 #include "shader_storage.h"
 #include "texture_storage.h"
 
+#include <iostream>
+
 namespace blockgame
 {
     void Game::Init()
@@ -29,7 +31,7 @@ namespace blockgame
 
             glm::ivec2 pos = IdToGridPosition(i);
 
-            UpdateBlock(pos, (blockgame::Block)(1 + Random_NextByte() % 3));
+            UpdateBlock(pos, Block::NONE);
         }
 
         blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
@@ -41,12 +43,14 @@ namespace blockgame
     {
         blockSpawnTimeRemaining -= delta;
 
-        return;
-
         if (blockSpawnTimeRemaining <= 0.0)
         {
-            UpdateBlock(glm::ivec2{0, 0}, Block::RED);
-            blockSpawnTimeRemaining = 999;
+            std::cout << "MEOW" << "\n";
+            int32_t x = (Random_NextByte() % 8);
+            int32_t y = (Random_NextByte() % 8);
+            UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
+
+            blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
         }
     }
 
@@ -60,6 +64,9 @@ namespace blockgame
 
         switch (newState)
         {
+        case Block::NONE:
+            blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
+            break;
         case Block::RED:
             blockSprite.tint = Vec4FromColor(PICO_RED);
             break;
