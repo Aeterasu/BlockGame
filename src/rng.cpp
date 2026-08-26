@@ -25,20 +25,20 @@ std::size_t ptr = 0;
 
 uint8_t Random_NextByte()
 {
-    if (ptr >= 256)
-    {
-        ptr = 0;
-    }
+	if (ptr >= 256)
+	{
+		ptr = 0;
+	}
 
-    uint8_t val = table[ptr];
-    ptr++;
+	uint8_t val = table[ptr];
+	ptr++;
 
-    return val;
+	return val;
 }
 
 float Random_NextFloat()
 {
-    uint8_t byte = Random_NextByte();
+	uint8_t byte = Random_NextByte();
 
-    return static_cast<float>(byte) / 255.0f;
+	return static_cast<float>(byte) / 255.0f;
 }

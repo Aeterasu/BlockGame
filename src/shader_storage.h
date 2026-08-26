@@ -4,12 +4,12 @@
 
 namespace blockgame
 {
-    struct ShaderStorage
-    {
-        Shader spriteShader;
-    };
+	struct ShaderStorage
+	{
+		Shader spriteShader;
+	};
 
-    extern ShaderStorage shaderStorage;
+	extern ShaderStorage shaderStorage;
 
-    void InitShaderStorage();
+	void InitShaderStorage();
 } // namespace blockgame

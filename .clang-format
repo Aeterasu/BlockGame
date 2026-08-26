@@ -4,14 +4,14 @@ BasedOnStyle: LLVM
 
 IndentWidth: 4
 TabWidth: 4
-UseTab: Never
+UseTab: Always
 ContinuationIndentWidth: 4
 ColumnLimit: 120
 
-# Braces: Allman
+IndentCaseLabels: true
+
 BreakBeforeBraces: Allman
 
-# Never collapse short constructs
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
@@ -19,18 +19,14 @@ AllowShortBlocksOnASingleLine: false
 AllowShortCaseLabelsOnASingleLine: false
 AllowShortEnumsOnASingleLine: false
 
-# Add braces to control statements that don't have them
 InsertBraces: true
 
-# Parentheses
 SpaceBeforeParens: ControlStatements
 
-# Pointers / references
 DerivePointerAlignment: false
 PointerAlignment: Left
 ReferenceAlignment: Left
 
-# Includes
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 
@@ -38,18 +34,14 @@ IncludeBlocks: Regroup
 Standard: c++17
 Cpp11BracedListStyle: true
 
-# Classes
 AccessModifierOffset: -4
 EmptyLineBeforeAccessModifier: Always
 
-# Namespaces
 NamespaceIndentation: All
 
-# Operators / expressions
 BreakBeforeBinaryOperators: None
 SpaceBeforeAssignmentOperators: true
 
-# Constructors
 BreakConstructorInitializers: AfterColon
 ConstructorInitializerIndentWidth: 4
 PackConstructorInitializers: BinPack

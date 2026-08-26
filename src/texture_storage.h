@@ -4,15 +4,15 @@
 
 namespace blockgame
 {
-    struct TextureStorage
-    {
-        Texture grid;
-        Texture border;
-        Texture block;
-        Texture cursor;
-    };
+	struct TextureStorage
+	{
+		Texture grid;
+		Texture border;
+		Texture block;
+		Texture cursor;
+	};
 
-    extern TextureStorage textureStorage;
+	extern TextureStorage textureStorage;
 
-    void InitTextureStorage();
+	void InitTextureStorage();
 } // namespace blockgame

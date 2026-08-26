@@ -4,5 +4,5 @@
 
 namespace blockgame
 {
-    std::string LoadFileAsString(const std::string& path);
+	std::string LoadFileAsString(const std::string& path);
 }

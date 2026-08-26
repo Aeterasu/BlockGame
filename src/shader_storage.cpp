@@ -4,11 +4,11 @@
 
 namespace blockgame
 {
-    ShaderStorage shaderStorage;
+	ShaderStorage shaderStorage;
 
-    void InitShaderStorage()
-    {
-        shaderStorage.spriteShader =
-            LoadShader("assets/shaders/sprite.vertex.glsl", "assets/shaders/sprite.fragment.glsl");
-    }
+	void InitShaderStorage()
+	{
+		shaderStorage.spriteShader =
+			LoadShader("assets/shaders/sprite.vertex.glsl", "assets/shaders/sprite.fragment.glsl");
+	}
 } // namespace blockgame

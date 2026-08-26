@@ -12,107 +12,107 @@
 
 namespace blockgame
 {
-    void Game::Init()
-    {
-        Sprite grid;
-        grid.size = glm::vec2(270.0f, 270.0f);
-        grid.texture = &textureStorage.grid;
-        grid.shader = &shaderStorage.spriteShader;
-        grid.zIndex = -999999;
-        gridSpriteHandle = renderer.AddSprite(grid);
+	void Game::Init()
+	{
+		Sprite grid;
+		grid.size = glm::vec2(270.0f, 270.0f);
+		grid.texture = &textureStorage.grid;
+		grid.shader = &shaderStorage.spriteShader;
+		grid.zIndex = -999999;
+		gridSpriteHandle = renderer.AddSprite(grid);
 
-        for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
-        {
-            blocks.push_back(Block::NONE);
+		for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
+		{
+			blocks.push_back(Block::NONE);
 
-            blockSprite.size = glm::vec2(26.0f, 26.0f);
-            blockSprite.texture = &textureStorage.block;
-            blockSprite.shader = &shaderStorage.spriteShader;
-            blockSpriteHandles.push_back(renderer.AddSprite(blockSprite));
+			blockSprite.size = glm::vec2(26.0f, 26.0f);
+			blockSprite.texture = &textureStorage.block;
+			blockSprite.shader = &shaderStorage.spriteShader;
+			blockSpriteHandles.push_back(renderer.AddSprite(blockSprite));
 
-            glm::ivec2 pos = IdToGridPosition(i);
+			glm::ivec2 pos = IdToGridPosition(i);
 
-            UpdateBlock(pos, Block::NONE);
-        }
+			UpdateBlock(pos, Block::NONE);
+		}
 
-        cursorSprite.size = glm::vec2(26.0f, 26.0f);
-        cursorSprite.texture = &textureStorage.cursor;
-        cursorSprite.shader = &shaderStorage.spriteShader;
-        cursorSprite.zIndex = 4096;
-        cursorSpriteHandle = renderer.AddSprite(cursorSprite);
+		cursorSprite.size = glm::vec2(26.0f, 26.0f);
+		cursorSprite.texture = &textureStorage.cursor;
+		cursorSprite.shader = &shaderStorage.spriteShader;
+		cursorSprite.zIndex = 4096;
+		cursorSpriteHandle = renderer.AddSprite(cursorSprite);
 
-        blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
+		blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
 
-        std::fprintf(stderr, "Game initialized!");
-    }
+		std::fprintf(stderr, "Game initialized!");
+	}
 
-    void Game::Tick(const double delta)
-    {
-        blockSpawnTimeRemaining -= delta;
+	void Game::Tick(const double delta)
+	{
+		blockSpawnTimeRemaining -= delta;
 
-        if (blockSpawnTimeRemaining <= 0.0)
-        {
-            int32_t x = (Random_NextByte() % 8);
-            int32_t y = (Random_NextByte() % 8);
-            UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
+		if (blockSpawnTimeRemaining <= 0.0)
+		{
+			int32_t x = (Random_NextByte() % 8);
+			int32_t y = (Random_NextByte() % 8);
+			UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
 
-            blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
-        }
+			blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
+		}
 
-        // cursor
+		// cursor
 
-        cursorSprite.position = GridPositionToRealPosition(currentCursorPosition);
-        renderer.UpdateSprite(cursorSpriteHandle, cursorSprite);
-    }
+		cursorSprite.position = GridPositionToRealPosition(currentCursorPosition);
+		renderer.UpdateSprite(cursorSpriteHandle, cursorSprite);
+	}
 
-    void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
-    {
-        auto id = GridPositionToId(gridPosition);
+	void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
+	{
+		auto id = GridPositionToId(gridPosition);
 
-        blocks.at(id) = newState;
+		blocks.at(id) = newState;
 
-        blockSprite.position = GridPositionToRealPosition(gridPosition);
+		blockSprite.position = GridPositionToRealPosition(gridPosition);
 
-        switch (newState)
-        {
-        case Block::NONE:
-            blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
-            break;
-        case Block::RED:
-            blockSprite.tint = Vec4FromColor(PICO_RED);
-            break;
-        case Block::BLUE:
-            blockSprite.tint = Vec4FromColor(PICO_BLUE);
-            break;
-        case Block::GREEN:
-            blockSprite.tint = Vec4FromColor(PICO_GREEN);
-            break;
-        default:
-            blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
-        }
+		switch (newState)
+		{
+			case Block::NONE:
+				blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
+				break;
+			case Block::RED:
+				blockSprite.tint = Vec4FromColor(PICO_RED);
+				break;
+			case Block::BLUE:
+				blockSprite.tint = Vec4FromColor(PICO_BLUE);
+				break;
+			case Block::GREEN:
+				blockSprite.tint = Vec4FromColor(PICO_GREEN);
+				break;
+			default:
+				blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
+		}
 
-        renderer.UpdateSprite(blockSpriteHandles.at(id), blockSprite);
-    }
+		renderer.UpdateSprite(blockSpriteHandles.at(id), blockSprite);
+	}
 
-    glm::vec2 Game::GridPositionToRealPosition(const glm::ivec2 gridPosition)
-    {
-        return glm::vec2(39.0f + gridPosition.x * 23.0f, 41.0f + gridPosition.y * 23.0f);
-    }
+	glm::vec2 Game::GridPositionToRealPosition(const glm::ivec2 gridPosition)
+	{
+		return glm::vec2(39.0f + gridPosition.x * 23.0f, 41.0f + gridPosition.y * 23.0f);
+	}
 
-    size_t Game::GridPositionToId(const glm::ivec2 gridPosition)
-    {
-        return gridPosition.y * GRID_SIZE.x + gridPosition.x;
-    }
+	size_t Game::GridPositionToId(const glm::ivec2 gridPosition)
+	{
+		return gridPosition.y * GRID_SIZE.x + gridPosition.x;
+	}
 
-    glm::ivec2 Game::IdToGridPosition(const size_t id)
-    {
-        return glm::ivec2(id % GRID_SIZE.x, id / GRID_SIZE.x);
-    }
+	glm::ivec2 Game::IdToGridPosition(const size_t id)
+	{
+		return glm::ivec2(id % GRID_SIZE.x, id / GRID_SIZE.x);
+	}
 
-    void Game::MoveCursor(const glm::ivec2 dir)
-    {
-        currentCursorPosition += dir;
-        currentCursorPosition.x = std::clamp(currentCursorPosition.x, 0, GRID_SIZE.x - 1);
-        currentCursorPosition.y = std::clamp(currentCursorPosition.y, 0, GRID_SIZE.y - 1);
-    }
+	void Game::MoveCursor(const glm::ivec2 dir)
+	{
+		currentCursorPosition += dir;
+		currentCursorPosition.x = std::clamp(currentCursorPosition.x, 0, GRID_SIZE.x - 1);
+		currentCursorPosition.y = std::clamp(currentCursorPosition.y, 0, GRID_SIZE.y - 1);
+	}
 } // namespace blockgame
