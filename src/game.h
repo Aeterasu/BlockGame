@@ -17,7 +17,8 @@ namespace blockgame
 		std::vector<Block> blocks;
 		std::vector<SpriteHandle> blockSpriteHandles;
 
-		glm::ivec2 currentCursorPosition{0, GRID_SIZE.y - 1};
+		glm::ivec2 cursorGridPosition{0, GRID_SIZE.y - 1};
+		glm::vec2 cursorRealPosition{0.0f, 0.0f};
 
 		Sprite blockSprite;
 		SpriteHandle blockSpriteHandle;

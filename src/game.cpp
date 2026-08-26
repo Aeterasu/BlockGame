@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include "color.h"
+#include "lerp.h"
 #include "pico_palette.h"
 #include "renderer.h"
 #include "rng.h"
@@ -61,7 +62,12 @@ namespace blockgame
 
 		// cursor
 
-		cursorSprite.position = GridPositionToRealPosition(currentCursorPosition);
+		auto cursorTargetPosition = GridPositionToRealPosition(cursorGridPosition);
+		float weight = 1.0f - std::exp(-20.0f * delta);
+		cursorRealPosition.x = lerp(cursorRealPosition.x, cursorTargetPosition.x, weight);
+		cursorRealPosition.y = lerp(cursorRealPosition.y, cursorTargetPosition.y, weight);
+
+		cursorSprite.position = cursorRealPosition;
 		renderer.UpdateSprite(cursorSpriteHandle, cursorSprite);
 	}
 
@@ -111,8 +117,8 @@ namespace blockgame
 
 	void Game::MoveCursor(const glm::ivec2 dir)
 	{
-		currentCursorPosition += dir;
-		currentCursorPosition.x = std::clamp(currentCursorPosition.x, 0, GRID_SIZE.x - 1);
-		currentCursorPosition.y = std::clamp(currentCursorPosition.y, 0, GRID_SIZE.y - 1);
+		cursorGridPosition += dir;
+		cursorGridPosition.x = std::clamp(cursorGridPosition.x, 0, GRID_SIZE.x - 1);
+		cursorGridPosition.y = std::clamp(cursorGridPosition.y, 0, GRID_SIZE.y - 1);
 	}
 } // namespace blockgame
