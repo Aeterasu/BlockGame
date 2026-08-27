@@ -37,6 +37,7 @@ if(EMSCRIPTEN)
     target_compile_options(${PROJECT_NAME} PRIVATE
         -sUSE_SDL=2
         -sUSE_SDL_IMAGE=2
+				-sUSE_SDL_TTF=2
     )
 
     set(SHELL_FILE ${CMAKE_SOURCE_DIR}/web/shell.html)
@@ -44,6 +45,7 @@ if(EMSCRIPTEN)
     target_link_options(${PROJECT_NAME} PRIVATE
         -sUSE_SDL=2
         -sUSE_SDL_IMAGE=2
+				-sUSE_SDL_TTF=2
         -sSDL2_IMAGE_FORMATS=["png"]
         -sALLOW_MEMORY_GROWTH=1
         -sASYNCIFY
@@ -65,6 +67,7 @@ if(EMSCRIPTEN)
 else()
     find_package(SDL2 REQUIRED)
     find_package(SDL2_image REQUIRED)
+		find_package(SDL2_ttf REQUIRED)
     target_include_directories(${PROJECT_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
 
     if(TARGET SDL2::SDL2)
@@ -82,6 +85,12 @@ else()
     else()
         target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
     endif()
+
+		if(TARGET SDL2_ttf::SDL2_ttf)
+			target_link_libraries(${PROJECT_NAME} PRIVATE SDL2_ttf::SDL2_ttf)
+		else()
+			target_link_libraries(${PROJECT_NAME} PRIVATE ${SDL2_TTF_LIBRARIES})
+		endif()
 
     add_library(glad STATIC external/glad/src/gl.c)
     target_include_directories(glad PUBLIC external/glad/include)

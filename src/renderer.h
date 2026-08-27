@@ -13,6 +13,8 @@ namespace blockgame
 		SDL_Window* window = nullptr;
 		SDL_GLContext glContext = nullptr;
 
+		const bool ENABLE_VSYNC = false;
+
 		std::vector<Sprite> activeSprites;
 		std::vector<SpriteHandle> handles;
 

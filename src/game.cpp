@@ -9,6 +9,7 @@
 #include "texture_storage.h"
 
 #include <SDL2/SDL.h>
+#include <iostream>
 
 namespace blockgame
 {
@@ -48,7 +49,7 @@ namespace blockgame
 
 		blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
 
-		std::fprintf(stderr, "Game initialized!");
+		std::cout << "Game initialized!\n";
 	}
 
 	void Game::Tick(const double delta)
@@ -59,9 +60,23 @@ namespace blockgame
 
 		if (blockSpawnTimeRemaining <= 0.0)
 		{
-			int32_t x = (Random_NextByte() % 8);
-			int32_t y = (Random_NextByte() % 8);
-			UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
+			int i = 0;
+
+			while (i < 99)
+			{
+				int32_t x = (Random_NextByte() % 8);
+				int32_t y = (Random_NextByte() % 8);
+
+				if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE)
+				{
+					UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
+					break;
+				}
+				else
+				{
+					i++;
+				}
+			}
 
 			blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
 		}

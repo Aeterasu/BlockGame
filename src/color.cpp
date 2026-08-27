@@ -21,4 +21,15 @@ namespace blockgame
 	{
 		return Color(vec.x, vec.y, vec.z, vec.w);
 	}
+
+	SDL_Color ColorToSDLColor(const Color color)
+	{
+		auto toByte = [](float channel) -> Uint8
+		{
+			float clamped = std::clamp(channel, 0.0f, 1.0f);
+			return static_cast<Uint8>(std::round(clamped * 255.0f));
+		};
+
+		return SDL_Color{toByte(color.r), toByte(color.g), toByte(color.b), toByte(color.a)};
+	}
 } // namespace blockgame

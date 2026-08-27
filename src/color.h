@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL2/SDL.h>
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <string>
@@ -27,4 +28,5 @@ namespace blockgame
 
 	glm::vec4 Vec4FromColor(const Color color);
 	Color ColorFromVec4(const glm::vec4 vec);
+	SDL_Color ColorToSDLColor(const Color color);
 } // namespace blockgame

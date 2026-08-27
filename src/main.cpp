@@ -1,18 +1,20 @@
 #include "color.h"
+#include "font_storage.h"
 #include "game.h"
 #include "pico_palette.h"
 #include "renderer.h"
 #include "shader_storage.h"
+#include "text.h"
 #include "texture_storage.h"
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL_timer.h>
 #include <SDL_video.h>
-#include <cstdio>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
 namespace
 {
@@ -21,6 +23,12 @@ namespace
 	std::uint64_t lastTicks = 0;
 	constexpr double targetFps = 60.0f;
 	constexpr double fixedDeltaTime = 1.0 / targetFps;
+
+	double fpsUpdateTimer = 0.0;
+	std::uint32_t fpsFrameCount = 0;
+	std::uint32_t displayedFps = 0;
+
+	blockgame::Label fpsCounterLabel;
 
 	blockgame::Game game;
 
@@ -87,6 +95,17 @@ namespace
 		double deltaTime = (double)(now - lastTicks) / (double)SDL_GetPerformanceFrequency();
 		lastTicks = now;
 
+		fpsUpdateTimer += deltaTime;
+		fpsFrameCount++;
+
+		if (fpsUpdateTimer >= 1.0)
+		{
+			displayedFps = static_cast<uint32_t>(fpsFrameCount / fpsUpdateTimer);
+			fpsUpdateTimer = 0.0;
+			fpsFrameCount = 0;
+			fpsCounterLabel.SetText("FPS: " + std::to_string(displayedFps));
+		}
+
 		static double accumulator = 0.0;
 		accumulator += deltaTime;
 
@@ -111,6 +130,8 @@ namespace
 
 void CreateGlobalVisuals()
 {
+	// border
+
 	blockgame::Sprite border;
 	border.size = glm::vec2(270.0f, 270.0f);
 	border.texture = &blockgame::textureStorage.border;
@@ -119,13 +140,23 @@ void CreateGlobalVisuals()
 	blockgame::Color grey = blockgame::PICO_GREY;
 	border.tint = glm::vec4(grey.r, grey.g, grey.b, 1.0);
 	blockgame::renderer.AddSprite(border);
+
+	// fps counter
+
+	fpsCounterLabel.Create(blockgame::fontStorage.m3x6, "FPS: 0", blockgame::ColorToSDLColor(blockgame::PICO_GREY),
+						   &blockgame::shaderStorage.spriteShader, glm::vec2(4.0f, 0.0f), border.zIndex + 1);
 }
 
 int main()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
-		std::fprintf(stderr, "SDL_Init failed: %s\n", SDL_GetError());
+		std::cout << "SDL_Init failed: " << SDL_GetError() << "\n";
+	}
+
+	if (TTF_Init() != 0)
+	{
+		std::cout << "TTF_Init failed: " << TTF_GetError() << "\n";
 	}
 
 	bool gl = blockgame::renderer.InitGL();
@@ -140,6 +171,7 @@ int main()
 
 	blockgame::InitTextureStorage();
 	blockgame::InitShaderStorage();
+	blockgame::InitFontStorage();
 
 	CreateGlobalVisuals(); // border and other screen space stuff we may have
 
