@@ -20,6 +20,8 @@ namespace blockgame
 		glm::ivec2 cursorGridPosition{0, GRID_SIZE.y - 1};
 		glm::vec2 cursorRealPosition{0.0f, 0.0f};
 
+		bool isDragging = false;
+
 		Sprite blockSprite;
 		SpriteHandle blockSpriteHandle;
 
@@ -36,6 +38,7 @@ namespace blockgame
 		size_t GridPositionToId(const glm::ivec2 gridPosition);
 		glm::ivec2 IdToGridPosition(const size_t id);
 
+		std::vector<size_t> GetConnectedGroup(const glm::ivec2 startPos);
 		void MoveCursor(const glm::ivec2 dir);
 	};
 } // namespace blockgame

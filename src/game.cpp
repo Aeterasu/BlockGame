@@ -9,7 +9,6 @@
 #include "texture_storage.h"
 
 #include <SDL2/SDL.h>
-#include <iostream>
 
 namespace blockgame
 {
@@ -115,10 +114,134 @@ namespace blockgame
 		return glm::ivec2(id % GRID_SIZE.x, id / GRID_SIZE.x);
 	}
 
+	std::vector<size_t> Game::GetConnectedGroup(const glm::ivec2 startPos)
+	{
+		std::vector<size_t> group;
+		auto startId = GridPositionToId(startPos);
+		Block color = blocks.at(startId);
+
+		if (color == Block::NONE)
+		{
+			return group;
+		}
+
+		std::vector<bool> visited(blocks.size(), false);
+		std::vector<glm::ivec2> stack;
+		stack.push_back(startPos);
+		visited[startId] = true;
+
+		static const glm::ivec2 neighbors[4] = {glm::ivec2{1, 0}, glm::ivec2{-1, 0}, glm::ivec2{0, 1},
+												glm::ivec2{0, -1}};
+
+		while (!stack.empty())
+		{
+			glm::ivec2 pos = stack.back();
+			stack.pop_back();
+			group.push_back(GridPositionToId(pos));
+
+			for (const auto& n : neighbors)
+			{
+				glm::ivec2 neighborPos = pos + n;
+
+				if (neighborPos.x < 0 || neighborPos.x >= GRID_SIZE.x || neighborPos.y < 0 ||
+					neighborPos.y >= GRID_SIZE.y)
+				{
+					continue;
+				}
+
+				auto neighborId = GridPositionToId(neighborPos);
+
+				if (!visited[neighborId] && blocks.at(neighborId) == color)
+				{
+					visited[neighborId] = true;
+					stack.push_back(neighborPos);
+				}
+			}
+		}
+
+		return group;
+	}
+
 	void Game::MoveCursor(const glm::ivec2 dir)
 	{
+		if (!isDragging)
+		{
+			cursorGridPosition += dir;
+			cursorGridPosition.x = std::clamp(cursorGridPosition.x, 0, GRID_SIZE.x - 1);
+			cursorGridPosition.y = std::clamp(cursorGridPosition.y, 0, GRID_SIZE.y - 1);
+			return;
+		}
+
+		auto currentBlock = blocks.at(GridPositionToId(cursorGridPosition));
+
+		if (currentBlock == Block::NONE)
+		{
+			return;
+		}
+
+		std::vector<size_t> movingIds = GetConnectedGroup(cursorGridPosition);
+		std::vector<bool> isMoving(blocks.size(), false);
+
+		for (auto id : movingIds)
+		{
+			isMoving[id] = true;
+		}
+
+		size_t i = 0;
+		while (i < movingIds.size())
+		{
+			glm::ivec2 pos = IdToGridPosition(movingIds[i]);
+			glm::ivec2 destPos = pos + dir;
+			i++;
+
+			if (destPos.x < 0 || destPos.x >= GRID_SIZE.x || destPos.y < 0 || destPos.y >= GRID_SIZE.y)
+			{
+				return;
+			}
+
+			auto destId = GridPositionToId(destPos);
+
+			if (isMoving[destId])
+			{
+				continue;
+			}
+
+			if (blocks.at(destId) == Block::NONE)
+			{
+				continue;
+			}
+
+			auto pushedGroup = GetConnectedGroup(destPos);
+
+			for (auto pushedId : pushedGroup)
+			{
+				if (!isMoving[pushedId])
+				{
+					isMoving[pushedId] = true;
+					movingIds.push_back(pushedId);
+				}
+			}
+		}
+
+		std::vector<Block> originalColors;
+		originalColors.reserve(movingIds.size());
+
+		for (auto id : movingIds)
+		{
+			originalColors.push_back(blocks.at(id));
+		}
+
+		for (auto id : movingIds)
+		{
+			UpdateBlock(IdToGridPosition(id), Block::NONE);
+		}
+
+		for (size_t j = 0; j < movingIds.size(); j++)
+		{
+			glm::ivec2 newPos = IdToGridPosition(movingIds[j]) + dir;
+			UpdateBlock(newPos, originalColors[j]);
+		}
+
 		cursorGridPosition += dir;
-		cursorGridPosition.x = std::clamp(cursorGridPosition.x, 0, GRID_SIZE.x - 1);
-		cursorGridPosition.y = std::clamp(cursorGridPosition.y, 0, GRID_SIZE.y - 1);
 	}
 } // namespace blockgame

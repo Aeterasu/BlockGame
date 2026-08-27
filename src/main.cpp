@@ -50,23 +50,32 @@ namespace
 					}
 					else
 					{
-
 						switch (event.key.keysym.sym)
 						{
-							case SDLK_w:
+							case SDLK_UP:
 								game.MoveCursor(glm::ivec2(0, -1));
 								break;
-							case SDLK_s:
+							case SDLK_DOWN:
 								game.MoveCursor(glm::ivec2(0, 1));
 								break;
-							case SDLK_a:
+							case SDLK_LEFT:
 								game.MoveCursor(glm::ivec2(-1, 0));
 								break;
-							case SDLK_d:
+							case SDLK_RIGHT:
 								game.MoveCursor(glm::ivec2(1, 0));
+								break;
+							case SDLK_z:
+								game.isDragging = true;
 								break;
 						}
 					}
+				}
+			}
+			else if (event.type == SDL_KEYUP)
+			{
+				if (event.key.keysym.sym == SDLK_z)
+				{
+					game.isDragging = false;
 				}
 			}
 		}
