@@ -67,6 +67,9 @@ namespace
 							case SDLK_z:
 								game.isDragging = true;
 								break;
+							case SDLK_x:
+								game.PlaceBomb();
+								break;
 						}
 					}
 				}

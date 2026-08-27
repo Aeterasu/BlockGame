@@ -22,6 +22,11 @@ namespace blockgame
 
 		bool isDragging = false;
 
+		glm::ivec2 bombGridPosition{0, 0};
+		bool isBombActive = false;
+		double bombTimeLeft = 0.0;
+		const double BOMB_TIMER = 1.0;
+
 		Sprite blockSprite;
 		SpriteHandle blockSpriteHandle;
 
@@ -30,6 +35,9 @@ namespace blockgame
 		Sprite cursorSprite;
 		SpriteHandle cursorSpriteHandle;
 
+		Sprite bombSprite;
+		SpriteHandle bombSpriteHandle;
+
 		void Init();
 		void Tick(const double delta);
 		void UpdateBlock(const glm::ivec2 gridPosition, const Block newState);
@@ -37,8 +45,14 @@ namespace blockgame
 		glm::vec2 GridPositionToRealPosition(const glm::ivec2 gridPosition);
 		size_t GridPositionToId(const glm::ivec2 gridPosition);
 		glm::ivec2 IdToGridPosition(const size_t id);
+		Block GetBlockAtPosition(const glm::ivec2 gridPosition);
+
+		bool IsValidGridPosition(const glm::ivec2 gridPosition);
 
 		std::vector<size_t> GetConnectedGroup(const glm::ivec2 startPos);
 		void MoveCursor(const glm::ivec2 dir);
+
+		void PlaceBomb();
+		void ExplodeBomb();
 	};
 } // namespace blockgame

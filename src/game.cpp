@@ -41,6 +41,11 @@ namespace blockgame
 		cursorSprite.zIndex = 4096;
 		cursorSpriteHandle = renderer.AddSprite(cursorSprite);
 
+		bombSprite.size = glm::vec2(26.0f, 26.0f);
+		bombSprite.texture = &textureStorage.bomb;
+		bombSprite.shader = &shaderStorage.spriteShader;
+		bombSprite.zIndex = 2048;
+
 		blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
 
 		std::fprintf(stderr, "Game initialized!");
@@ -48,6 +53,8 @@ namespace blockgame
 
 	void Game::Tick(const double delta)
 	{
+		// block spawn
+
 		blockSpawnTimeRemaining -= delta;
 
 		if (blockSpawnTimeRemaining <= 0.0)
@@ -57,6 +64,18 @@ namespace blockgame
 			UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
 
 			blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
+		}
+
+		// bomb
+
+		if (isBombActive)
+		{
+			bombTimeLeft -= delta;
+
+			if (bombTimeLeft <= 0.0)
+			{
+				ExplodeBomb();
+			}
 		}
 
 		// cursor
@@ -112,6 +131,21 @@ namespace blockgame
 	glm::ivec2 Game::IdToGridPosition(const size_t id)
 	{
 		return glm::ivec2(id % GRID_SIZE.x, id / GRID_SIZE.x);
+	}
+
+	Block Game::GetBlockAtPosition(const glm::ivec2 gridPosition)
+	{
+		if (gridPosition.x < 0 || gridPosition.x >= GRID_SIZE.x || gridPosition.y < 0 || gridPosition.y >= GRID_SIZE.y)
+		{
+			return Block::NONE;
+		}
+		return blocks.at(GridPositionToId(gridPosition));
+	}
+
+	bool Game::IsValidGridPosition(const glm::ivec2 gridPosition)
+	{
+		return !(gridPosition.x < 0 || gridPosition.x >= GRID_SIZE.x || gridPosition.y < 0 ||
+				 gridPosition.y >= GRID_SIZE.y);
 	}
 
 	std::vector<size_t> Game::GetConnectedGroup(const glm::ivec2 startPos)
@@ -194,7 +228,7 @@ namespace blockgame
 			glm::ivec2 destPos = pos + dir;
 			i++;
 
-			if (destPos.x < 0 || destPos.x >= GRID_SIZE.x || destPos.y < 0 || destPos.y >= GRID_SIZE.y)
+			if (!IsValidGridPosition(destPos))
 			{
 				return;
 			}
@@ -243,5 +277,59 @@ namespace blockgame
 		}
 
 		cursorGridPosition += dir;
+	}
+
+	void Game::PlaceBomb()
+	{
+		if (isBombActive)
+		{
+			return;
+		}
+
+		if (GetBlockAtPosition(cursorGridPosition) != Block::NONE)
+		{
+			return;
+		}
+
+		bombGridPosition = cursorGridPosition;
+		bombTimeLeft = BOMB_TIMER;
+
+		isBombActive = true;
+
+		bombSprite.position = GridPositionToRealPosition(bombGridPosition);
+		bombSpriteHandle = renderer.AddSprite(bombSprite);
+	}
+
+	void Game::ExplodeBomb()
+	{
+		if (!isBombActive)
+		{
+			return;
+		}
+
+		isBombActive = false;
+
+		std::vector<glm::ivec2> explosionChecks = {
+			glm::ivec2(0, 0), glm::ivec2(-1, 0), glm::ivec2(1, 0), glm::ivec2(0, -1), glm::ivec2(0, 1),
+		};
+
+		for (auto dir : explosionChecks)
+		{
+			glm::ivec2 target = bombGridPosition + dir;
+
+			if (!IsValidGridPosition(target))
+			{
+				continue;
+			}
+
+			auto explosionGroup = GetConnectedGroup(target);
+
+			for (auto id : explosionGroup)
+			{
+				UpdateBlock(IdToGridPosition(id), Block::NONE);
+			}
+		}
+
+		renderer.RemoveSprite(bombSpriteHandle);
 	}
 } // namespace blockgame
