@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 #include <numeric>
 
 namespace blockgame
@@ -31,27 +32,27 @@ namespace blockgame
 
 		if (window == nullptr)
 		{
-			std::fprintf(stderr, "Game window could not be created, aborting...");
+			std::cout << "Game window could not be created, aborting...\n";
 			return false;
 		}
 
 		glContext = SDL_GL_CreateContext(window);
 		if (!glContext)
 		{
-			std::fprintf(stderr, "SDL_GL_CreateContext failed: %s\n", SDL_GetError());
+			std::cout << "SDL_GL_CreateContext failed: " << SDL_GetError() << "\n";
 			return false;
 		}
 
 #ifndef __EMSCRIPTEN__
 		if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
 		{
-			std::fprintf(stderr, "Failed to load GL via GLAD\n");
+			std::cout << "Failed to load GL via GLAD\n";
 			return false;
 		}
 #endif
 
-		std::fprintf(stderr, "GL Version: %s\n", glGetString(GL_VERSION));
-		std::fprintf(stderr, "GL Renderer: %s\n", glGetString(GL_RENDERER));
+		std::cout << "GL Version: " << glGetString(GL_VERSION) << "\n";
+		std::cout << "GL Renderer: " << glGetString(GL_RENDERER) << "\n";
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -102,7 +103,7 @@ namespace blockgame
 		activeSprites.push_back(sprite);
 		handles.push_back(h);
 
-		std::fprintf(stderr, "Added sprite, sprite handle: %d\n", h);
+		std::cout << "Added sprite, sprite handle: " << h << "\n";
 
 		return h;
 	}

@@ -29,15 +29,10 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 if(EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
-    # USE_SDL / USE_SDL_IMAGE need to be on the COMPILE line too - they
-    # control which headers Emscripten's SDL2/SDL2_image ports expose.
-    # USE_WEBGL2 / FULL_ES3 are link-only settings; putting them here as
-    # well just produces "linker setting ignored during compilation"
-    # warnings, so they're kept out of this list.
     target_compile_options(${PROJECT_NAME} PRIVATE
         -sUSE_SDL=2
         -sUSE_SDL_IMAGE=2
-				-sUSE_SDL_TTF=2
+		-sUSE_SDL_TTF=2
     )
 
     set(SHELL_FILE ${CMAKE_SOURCE_DIR}/web/shell.html)

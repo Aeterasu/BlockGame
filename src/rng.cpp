@@ -1,5 +1,7 @@
 #include "rng.h"
 
+#include <cstdlib>
+
 // clang-format off
 uint8_t table[256] = {
     23, 187, 44, 9, 251, 132, 67, 200, 15, 88, 3, 176, 92, 240, 51, 128,

@@ -1,6 +1,7 @@
 #include "color.h"
 #include "font_storage.h"
 #include "game.h"
+#include "gl_compatibility.h"
 #include "pico_palette.h"
 #include "renderer.h"
 #include "shader_storage.h"
@@ -31,6 +32,24 @@ namespace
 	blockgame::Label fpsCounterLabel;
 
 	blockgame::Game game;
+
+#ifdef __EMSCRIPTEN__
+	EM_BOOL OnCanvasResize(int eventType, const EmscriptenUiEvent* e, void* userData)
+	{
+		double cssWidth, cssHeight;
+		emscripten_get_element_css_size("canvas", &cssWidth, &cssHeight);
+
+		double dpr = emscripten_get_device_pixel_ratio();
+		int w = static_cast<int>(cssWidth * dpr);
+		int h = static_cast<int>(cssHeight * dpr);
+
+		emscripten_set_canvas_element_size("canvas", w, h);
+		SDL_SetWindowSize(blockgame::renderer.window, w, h);
+		blockgame::renderer.OnResize(w, h);
+
+		return EM_TRUE;
+	}
+#endif
 
 	bool InitGame()
 	{
@@ -177,6 +196,11 @@ int main()
 		SDL_Quit();
 		return -1;
 	}
+
+#ifdef __EMSCRIPTEN__
+	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, nullptr, EM_FALSE, OnCanvasResize);
+	OnCanvasResize(0, nullptr, nullptr);
+#endif
 
 	lastTicks = SDL_GetPerformanceCounter();
 
