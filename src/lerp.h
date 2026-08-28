@@ -1,9 +1,22 @@
 #pragma once
 #include <cmath>
+#include <cstdint>
 
 inline float lerp(float from, float to, float weight)
 {
 	return from + (to - from) * weight;
+}
+
+inline uint64_t lerpInt64(uint64_t from, uint64_t to, double weight)
+{
+	if (to >= from)
+	{
+		return from + static_cast<uint64_t>((to - from) * weight);
+	}
+	else
+	{
+		return from - static_cast<uint64_t>((from - to) * weight);
+	}
 }
 
 inline float lerpQuadIn(float from, float to, float weight)

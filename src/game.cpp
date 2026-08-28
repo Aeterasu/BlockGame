@@ -1,6 +1,7 @@
 #include "game.h"
 
 #include "color.h"
+#include "font_storage.h"
 #include "lerp.h"
 #include "pico_palette.h"
 #include "renderer.h"
@@ -10,6 +11,7 @@
 
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <unordered_map>
 
 namespace blockgame
 {
@@ -48,6 +50,11 @@ namespace blockgame
 		bombSprite.zIndex = 2048;
 
 		blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
+
+		scoring.score = 0;
+
+		scoreLabel.Create(fontStorage.superstar, "SCORE: 0", ColorToSDLColor(blockgame::PICO_DARK_BLUE),
+						  &blockgame::shaderStorage.spriteShader, glm::vec2(37.0f, 24.0f), 999999);
 
 		std::cout << "Game initialized!\n";
 	}
@@ -102,6 +109,17 @@ namespace blockgame
 
 		cursorSprite.position = cursorRealPosition;
 		renderer.UpdateSprite(cursorSpriteHandle, cursorSprite);
+
+		// score
+
+		scoringLerpTime = std::min(scoringLerpTime + delta * 5.0, 1.0);
+		displayedScore = lerpInt64(displayedScore, scoring.score, scoringLerpTime);
+
+		if (displayedScore != lastDisplayedScore)
+		{
+			lastDisplayedScore = displayedScore;
+			scoreLabel.SetText("SCORE: " + FormatScore(displayedScore));
+		}
 	}
 
 	void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
@@ -338,10 +356,26 @@ namespace blockgame
 			}
 
 			auto explosionGroup = GetConnectedGroup(target);
+			std::unordered_map<Block, uint64_t> comboCounter;
 
 			for (auto id : explosionGroup)
 			{
+				scoringLerpTime = 0.0;
+
+				Block blockType = blocks.at(id);
+
+				if (blockType != Block::NONE)
+				{
+					comboCounter[blockType]++;
+				}
+
 				UpdateBlock(IdToGridPosition(id), Block::NONE);
+			}
+
+			for (const auto& [_, value] : comboCounter)
+			{
+				scoring.AwardScore(value);
+				std::cout << "Score awarded! Combo counter: " << value << "\n";
 			}
 		}
 

@@ -24,4 +24,6 @@ namespace blockgame
 	};
 
 	Texture CreateTextTexture(TTF_Font* font, const std::string& text, SDL_Color color);
+
+	std::string FormatScore(uint64_t score);
 } // namespace blockgame

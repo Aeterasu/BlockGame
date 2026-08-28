@@ -1,7 +1,9 @@
 #pragma once
 
 #include "block.h"
+#include "scoring.h"
 #include "sprite.h"
+#include "text.h"
 
 #include <vector>
 
@@ -37,6 +39,12 @@ namespace blockgame
 
 		Sprite bombSprite;
 		SpriteHandle bombSpriteHandle;
+
+		Scoring scoring;
+		Label scoreLabel;
+		uint64_t lastDisplayedScore = 0;
+		uint64_t displayedScore = 0;
+		double scoringLerpTime = 0.0;
 
 		void Init();
 		void Tick(const double delta);

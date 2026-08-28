@@ -87,4 +87,32 @@ namespace blockgame
 		sprite.size = glm::vec2((float)texture.width, (float)texture.height);
 		renderer.UpdateSprite(handle, sprite);
 	}
+
+	std::string FormatScore(uint64_t score)
+	{
+		std::string s = std::to_string(score);
+
+		size_t len = s.length();
+
+		if (len <= 3)
+		{
+			return s;
+		}
+
+		size_t insert_position = len - 3;
+
+		while (insert_position > 0)
+		{
+			s.insert(insert_position, ",");
+
+			if (insert_position < 3)
+			{
+				break;
+			}
+
+			insert_position -= 3;
+		}
+
+		return s;
+	}
 } // namespace blockgame
