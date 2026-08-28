@@ -11,6 +11,7 @@ namespace blockgame
 		Texture block;
 		Texture cursor;
 		Texture bomb;
+		Texture letterboxBg;
 	};
 
 	extern TextureStorage textureStorage;

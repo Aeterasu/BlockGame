@@ -1,5 +1,7 @@
 #include "texture_storage.h"
 
+#include "texture.h"
+
 namespace blockgame
 {
 	TextureStorage textureStorage;
@@ -11,5 +13,6 @@ namespace blockgame
 		textureStorage.block = LoadTexture("assets/textures/texture_block.png");
 		textureStorage.cursor = LoadTexture("assets/textures/texture_cursor.png");
 		textureStorage.bomb = LoadTexture("assets/textures/texture_bomb.png");
+		textureStorage.letterboxBg = LoadTexture("assets/textures/me.png");
 	}
 } // namespace blockgame

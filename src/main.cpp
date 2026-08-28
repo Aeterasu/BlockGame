@@ -89,6 +89,13 @@ namespace
 					game.isDragging = false;
 				}
 			}
+			else if (event.type == SDL_WINDOWEVENT)
+			{
+				if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+				{
+					blockgame::renderer.OnResize(event.window.data1, event.window.data2);
+				}
+			}
 		}
 
 		std::uint64_t now = SDL_GetPerformanceCounter();
@@ -130,6 +137,10 @@ namespace
 
 void CreateGlobalVisuals()
 {
+	// letterbox bg
+
+	blockgame::renderer.SetLetterboxBackground(&blockgame::textureStorage.letterboxBg);
+
 	// border
 
 	blockgame::Sprite border;

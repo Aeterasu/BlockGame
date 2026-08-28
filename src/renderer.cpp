@@ -1,5 +1,6 @@
 #include "renderer.h"
 
+#include "shader_storage.h"
 #include "sprite.h"
 
 #include <algorithm>
@@ -26,7 +27,7 @@ namespace blockgame
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
 		window = SDL_CreateWindow("blockgame", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 270, 270,
-								  SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+								  SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
 		if (window == nullptr)
 		{
@@ -133,8 +134,17 @@ namespace blockgame
 
 	void Renderer::DrawFrame()
 	{
+		glViewport(0, 0, windowWidth, windowHeight);
+
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		if (hasLetterboxBackground)
+		{
+			blockgame::DrawSprite(letterboxBackground, windowProjection, quadVao);
+		}
+
+		glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
 
 		std::vector<size_t> drawOrder(activeSprites.size());
 		std::iota(drawOrder.begin(), drawOrder.end(), 0);
@@ -151,5 +161,36 @@ namespace blockgame
 	{
 		SDL_GL_DeleteContext(glContext);
 		SDL_DestroyWindow(window);
+	}
+
+	void Renderer::OnResize(int width, int height)
+	{
+		windowWidth = width;
+		windowHeight = height;
+
+		constexpr float logicalSize = 270.0f;
+		float scale = std::min(width / logicalSize, height / logicalSize);
+
+		int viewportW = static_cast<int>(logicalSize * scale);
+		int viewportH = static_cast<int>(logicalSize * scale);
+		int viewportX = (width - viewportW) / 2;
+		int viewportY = (height - viewportH) / 2;
+
+		viewport = {viewportX, viewportY, viewportW, viewportH};
+
+		// bg
+
+		letterboxBackground.position = glm::vec2(0.0f, 0.0f);
+		letterboxBackground.size = glm::vec2((float)width, (float)height);
+
+		windowProjection = glm::ortho(0.0f, (float)width, (float)height, 0.0f, -1.0f, 1.0f);
+	}
+
+	void Renderer::SetLetterboxBackground(Texture* texture)
+	{
+		letterboxBackground.texture = texture;
+		letterboxBackground.shader = &shaderStorage.spriteShader;
+		letterboxBackground.tint = glm::vec4(1.0f);
+		hasLetterboxBackground = true;
 	}
 } // namespace blockgame

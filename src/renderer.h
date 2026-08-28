@@ -13,7 +13,15 @@ namespace blockgame
 		SDL_Window* window = nullptr;
 		SDL_GLContext glContext = nullptr;
 
+		int windowWidth = 270;
+		int windowHeight = 270;
+
+		SDL_Rect viewport = {0, 0, 270, 270};
+
 		const bool ENABLE_VSYNC = false;
+
+		Sprite letterboxBackground;
+		bool hasLetterboxBackground = false;
 
 		std::vector<Sprite> activeSprites;
 		std::vector<SpriteHandle> handles;
@@ -22,6 +30,7 @@ namespace blockgame
 
 		GLuint quadVao = 0;
 		glm::mat4 projection{1.0f};
+		glm::mat4 windowProjection;
 
 		SpriteHandle AddSprite(const Sprite& sprite);
 		void RemoveSprite(SpriteHandle handle);
@@ -34,6 +43,10 @@ namespace blockgame
 		void DrawFrame();
 
 		void DeleteGL();
+
+		void OnResize(int width, int height);
+
+		void SetLetterboxBackground(Texture* texture);
 	};
 
 	extern Renderer renderer;
