@@ -15,8 +15,10 @@
 
 namespace blockgame
 {
-	void Game::Init()
+	template <typename GameMode_> void Game::Init()
 	{
+		gameMode.emplace<GameMode_>();
+
 		Sprite grid;
 		grid.size = glm::vec2(270.0f, 270.0f);
 		grid.texture = &textureStorage.grid;
@@ -60,6 +62,9 @@ namespace blockgame
 
 		std::cout << "Game initialized!\n";
 	}
+	template void Game::Init<BlitzMode>();
+	template void Game::Init<EndlessMode>();
+	template void Game::Init<SpeedrunMode>();
 
 	void Game::Tick(const double delta)
 	{

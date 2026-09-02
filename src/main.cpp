@@ -53,7 +53,7 @@ namespace
 
 	bool InitGame()
 	{
-		game.Init();
+		game.Init<blockgame::BlitzMode>();
 
 		return true;
 	}

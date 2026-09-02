@@ -6,13 +6,50 @@
 #include "text.h"
 
 #include <array>
+#include <cstdint>
+#include <variant>
 #include <vector>
 
 namespace blockgame
 {
+	enum class Difficulty : uint8_t
+	{
+		LEVEL_1,
+		LEVEL_2,
+		LEVEL_3,
+		LEVEL_4,
+		LEVEL_5,
+	};
+
+	// limited time, score as much as possible
+	struct BlitzMode
+	{
+		const double TIME = 180.0;
+		double timeLeft = 180.0;
+
+		void Tick(double delta);
+	};
+
+	// endless fun
+	struct EndlessMode
+	{
+	};
+
+	// difficulty is high, clear 400 blocks as fast as possible
+	struct SpeedrunMode
+	{
+		const uint64_t TARGET_CLEARS = 500;
+		uint64_t currentClears = 0;
+		double time = 0.0;
+	};
+
+	using GameMode = std::variant<BlitzMode, EndlessMode, SpeedrunMode>;
+
 	struct Game
 	{
 		static constexpr glm::ivec2 GRID_SIZE = glm::ivec2{8, 8};
+
+		GameMode gameMode;
 
 		bool isGameOver = false;
 
@@ -51,7 +88,8 @@ namespace blockgame
 		Scoring scoring;
 		Label scoreLabel;
 
-		void Init();
+		template <typename GameMode_> void Init();
+
 		void Tick(const double delta);
 		void UpdateBlock(const glm::ivec2 gridPosition, const Block newState);
 
