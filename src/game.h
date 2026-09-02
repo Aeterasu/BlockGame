@@ -50,9 +50,6 @@ namespace blockgame
 
 		Scoring scoring;
 		Label scoreLabel;
-		uint64_t lastDisplayedScore = 0;
-		uint64_t displayedScore = 0;
-		double scoringLerpTime = 0.0;
 
 		void Init();
 		void Tick(const double delta);

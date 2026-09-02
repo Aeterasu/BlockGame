@@ -56,6 +56,8 @@ namespace blockgame
 		scoreLabel.Create(fontStorage.superstar, "SCORE: 0", ColorToSDLColor(blockgame::PICO_DARK_BLUE),
 						  &blockgame::shaderStorage.spriteShader, glm::vec2(37.0f, 24.0f), 999999);
 
+		scoring.scoreLabel = &scoreLabel;
+
 		std::cout << "Game initialized!\n";
 	}
 
@@ -131,14 +133,7 @@ namespace blockgame
 
 		// score
 
-		scoringLerpTime = std::min(scoringLerpTime + delta * 5.0, 1.0);
-		displayedScore = lerpInt64(displayedScore, scoring.score, scoringLerpTime);
-
-		if (displayedScore != lastDisplayedScore)
-		{
-			lastDisplayedScore = displayedScore;
-			scoreLabel.SetText("SCORE: " + FormatScore(displayedScore));
-		}
+		scoring.Tick(delta);
 
 		// game over
 
@@ -415,8 +410,6 @@ namespace blockgame
 
 			for (auto id : explosionGroup)
 			{
-				scoringLerpTime = 0.0;
-
 				Block blockType = blocks.at(id);
 
 				if (blockType != Block::NONE)
