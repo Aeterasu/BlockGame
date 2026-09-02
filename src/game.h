@@ -5,6 +5,7 @@
 #include "sprite.h"
 #include "text.h"
 
+#include <array>
 #include <vector>
 
 namespace blockgame
@@ -13,11 +14,14 @@ namespace blockgame
 	{
 		static constexpr glm::ivec2 GRID_SIZE = glm::ivec2{8, 8};
 
+		bool isGameOver = false;
+
 		const double BLOCK_SPAWN_TIME = 1.5;
 		double blockSpawnTimeRemaining = 0.0;
 
-		std::vector<Block> blocks;
-		std::vector<SpriteHandle> blockSpriteHandles;
+		std::array<Block, 64> blocks;
+		std::array<SpriteHandle, 64> blockSpriteHandles;
+		std::array<glm::vec2, 64> blockRealPositions;
 
 		glm::ivec2 cursorGridPosition{0, GRID_SIZE.y - 1};
 		glm::vec2 cursorRealPosition{0.0f, 0.0f};
@@ -28,6 +32,10 @@ namespace blockgame
 		bool isBombActive = false;
 		double bombTimeLeft = 0.0;
 		const double BOMB_TIMER = 1.0;
+
+		const double GAME_OVER_TIME_LIMIT = 1.5;
+		double gameOverTimer = 0.0;
+		bool potentialGameOver = false;
 
 		Sprite blockSprite;
 		SpriteHandle blockSpriteHandle;
@@ -56,6 +64,10 @@ namespace blockgame
 		Block GetBlockAtPosition(const glm::ivec2 gridPosition);
 
 		bool IsValidGridPosition(const glm::ivec2 gridPosition);
+
+		void CheckForGameOverState();
+
+		glm::vec4 BlockTint(const Block block);
 
 		std::vector<size_t> GetConnectedGroup(const glm::ivec2 startPos);
 		void MoveCursor(const glm::ivec2 dir);

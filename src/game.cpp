@@ -26,12 +26,12 @@ namespace blockgame
 
 		for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
 		{
-			blocks.push_back(Block::NONE);
+			blocks.at(i) = Block::NONE;
 
 			blockSprite.size = glm::vec2(26.0f, 26.0f);
 			blockSprite.texture = &textureStorage.block;
 			blockSprite.shader = &shaderStorage.spriteShader;
-			blockSpriteHandles.push_back(renderer.AddSprite(blockSprite));
+			blockSpriteHandles.at(i) = renderer.AddSprite(blockSprite);
 
 			glm::ivec2 pos = IdToGridPosition(i);
 
@@ -61,6 +61,25 @@ namespace blockgame
 
 	void Game::Tick(const double delta)
 	{
+		if (isGameOver)
+		{
+			return;
+		}
+
+		// blocks sliding
+
+		for (size_t id = 0; id < blocks.size(); id++)
+		{
+			glm::vec2 target = GridPositionToRealPosition(IdToGridPosition(id));
+			float weight = 1.0f - std::exp(-20.0f * delta); // same feel as the cursor
+			blockRealPositions[id].x = lerp(blockRealPositions[id].x, target.x, weight);
+			blockRealPositions[id].y = lerp(blockRealPositions[id].y, target.y, weight);
+
+			blockSprite.position = blockRealPositions[id];
+			blockSprite.tint = BlockTint(blocks[id]);
+			renderer.UpdateSprite(blockSpriteHandles.at(id), blockSprite);
+		}
+
 		// block spawn
 
 		blockSpawnTimeRemaining -= delta;
@@ -120,6 +139,23 @@ namespace blockgame
 			lastDisplayedScore = displayedScore;
 			scoreLabel.SetText("SCORE: " + FormatScore(displayedScore));
 		}
+
+		// game over
+
+		if (potentialGameOver)
+		{
+			gameOverTimer += delta;
+
+			if (gameOverTimer > GAME_OVER_TIME_LIMIT)
+			{
+				isGameOver = true;
+				std::cout << "Game over!" << "\n";
+			}
+		}
+		else
+		{
+			return;
+		}
 	}
 
 	void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
@@ -130,25 +166,36 @@ namespace blockgame
 
 		blockSprite.position = GridPositionToRealPosition(gridPosition);
 
-		switch (newState)
-		{
-			case Block::NONE:
-				blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
-				break;
-			case Block::RED:
-				blockSprite.tint = Vec4FromColor(PICO_RED);
-				break;
-			case Block::BLUE:
-				blockSprite.tint = Vec4FromColor(PICO_BLUE);
-				break;
-			case Block::GREEN:
-				blockSprite.tint = Vec4FromColor(PICO_GREEN);
-				break;
-			default:
-				blockSprite.tint = glm::vec4(0.0, 0.0, 0.0, 0.0);
-		}
+		CheckForGameOverState();
+	}
 
-		renderer.UpdateSprite(blockSpriteHandles.at(id), blockSprite);
+	void Game::CheckForGameOverState()
+	{
+		potentialGameOver = true;
+
+		for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
+		{
+			if (blocks.at(i) == Block::NONE)
+			{
+				potentialGameOver = false;
+				return;
+			}
+		}
+	}
+
+	glm::vec4 Game::BlockTint(const Block block)
+	{
+		switch (block)
+		{
+			case Block::RED:
+				return Vec4FromColor(PICO_RED);
+			case Block::BLUE:
+				return Vec4FromColor(PICO_BLUE);
+			case Block::GREEN:
+				return Vec4FromColor(PICO_GREEN);
+			default:
+				return glm::vec4(0.0, 0.0, 0.0, 0.0);
+		}
 	}
 
 	glm::vec2 Game::GridPositionToRealPosition(const glm::ivec2 gridPosition)
@@ -291,22 +338,30 @@ namespace blockgame
 		}
 
 		std::vector<Block> originalColors;
+		std::vector<glm::vec2> originalRealPositions;
 		originalColors.reserve(movingIds.size());
+		originalRealPositions.reserve(movingIds.size());
 
 		for (auto id : movingIds)
 		{
 			originalColors.push_back(blocks.at(id));
+			originalRealPositions.push_back(blockRealPositions.at(id));
 		}
 
 		for (auto id : movingIds)
 		{
-			UpdateBlock(IdToGridPosition(id), Block::NONE);
+			// UpdateBlock(IdToGridPosition(id), Block::NONE);
+			blocks.at(id) = Block::NONE;
 		}
 
 		for (size_t j = 0; j < movingIds.size(); j++)
 		{
 			glm::ivec2 newPos = IdToGridPosition(movingIds[j]) + dir;
-			UpdateBlock(newPos, originalColors[j]);
+			auto destId = GridPositionToId(newPos);
+
+			blocks.at(destId) = originalColors[j];
+			blockRealPositions.at(destId) = originalRealPositions[j];
+			// UpdateBlock(newPos, originalColors[j]);
 		}
 
 		cursorGridPosition += dir;
