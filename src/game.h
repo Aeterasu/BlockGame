@@ -1,8 +1,8 @@
 #pragma once
 
 #include "block.h"
+#include "quad.h"
 #include "scoring.h"
-#include "sprite.h"
 #include "text.h"
 
 #include <array>
@@ -57,7 +57,7 @@ namespace blockgame
 		int32_t blockSpawnTurnsRemaining = 0;
 
 		std::array<Block, 64> blocks;
-		std::array<SpriteHandle, 64> blockSpriteHandles;
+		std::array<QuadHandle, 64> blockHandles;
 		std::array<glm::vec2, 64> blockRealPositions;
 
 		glm::ivec2 cursorGridPosition{0, GRID_SIZE.y - 1};
@@ -74,16 +74,16 @@ namespace blockgame
 		double gameOverTimer = 0.0;
 		bool potentialGameOver = false;
 
-		Sprite blockSprite;
-		SpriteHandle blockSpriteHandle;
+		Quad blockQuad;
+		QuadHandle blockHandle;
 
-		SpriteHandle gridSpriteHandle;
+		QuadHandle gridHandle;
 
-		Sprite cursorSprite;
-		SpriteHandle cursorSpriteHandle;
+		Quad cursorQuad;
+		QuadHandle cursorHandle;
 
-		Sprite bombSprite;
-		SpriteHandle bombSpriteHandle;
+		Quad bombQuad;
+		QuadHandle bombHandle;
 
 		Scoring scoring;
 		Label scoreLabel;

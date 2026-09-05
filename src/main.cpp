@@ -162,19 +162,18 @@ void CreateGlobalVisuals()
 
 	// border
 
-	blockgame::Sprite border;
+	blockgame::Quad border;
 	border.size = glm::vec2(270.0f, 270.0f);
-	border.texture = &blockgame::textureStorage.border;
-	border.shader = &blockgame::shaderStorage.spriteShader;
+	border.ApplyTexture(&blockgame::textureStorage.border);
 	border.zIndex = 999999;
 	blockgame::Color grey = blockgame::PICO_GREY;
-	border.tint = glm::vec4(grey.r, grey.g, grey.b, 1.0);
-	blockgame::renderer.AddSprite(border);
+	border.SetUniform("uTint", glm::vec4(grey.r, grey.g, grey.b, 1.0));
+	blockgame::renderer.AddQuad(border);
 
 	// fps counter
 
 	fpsCounterLabel.Create(blockgame::fontStorage.m3x6, "FPS: 0", blockgame::ColorToSDLColor(blockgame::PICO_GREY),
-						   &blockgame::shaderStorage.spriteShader, glm::vec2(4.0f, 0.0f), border.zIndex + 1);
+						   glm::vec2(4.0f, 0.0f), border.zIndex + 1);
 }
 
 int main()

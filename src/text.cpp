@@ -51,7 +51,7 @@ namespace blockgame
 		return texture;
 	}
 
-	void Label::Create(TTF_Font* font_, const std::string& text_, SDL_Color color_, const Shader* shader_,
+	void Label::Create(TTF_Font* font_, const std::string& text_, SDL_Color color_,
 					   glm::vec2 position_, std::int32_t zIndex_)
 	{
 		texture = CreateTextTexture(font_, text_, color_);
@@ -60,13 +60,12 @@ namespace blockgame
 		font = font_;
 		color = color_;
 
-		sprite.position = position_;
-		sprite.size = glm::vec2((float)texture.width, (float)texture.height);
-		sprite.texture = &texture;
-		sprite.shader = shader_;
-		sprite.zIndex = zIndex_;
+		quad.position = position_;
+		quad.size = glm::vec2((float)texture.width, (float)texture.height);
+		quad.ApplyTexture(&texture);
+		quad.zIndex = zIndex_;
 
-		handle = renderer.AddSprite(sprite);
+		handle = renderer.AddQuad(quad);
 	}
 
 	void Label::SetText(const std::string& text)
@@ -84,8 +83,8 @@ namespace blockgame
 		texture = CreateTextTexture(font, text, color);
 		lastText = text;
 
-		sprite.size = glm::vec2((float)texture.width, (float)texture.height);
-		renderer.UpdateSprite(handle, sprite);
+		quad.size = glm::vec2((float)texture.width, (float)texture.height);
+		renderer.UpdateQuad(handle, quad);
 	}
 
 	std::string FormatScore(uint64_t score)

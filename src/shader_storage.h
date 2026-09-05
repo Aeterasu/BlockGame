@@ -7,6 +7,7 @@ namespace blockgame
 	struct ShaderStorage
 	{
 		Shader spriteShader;
+		Shader gradientTestShader;
 	};
 
 	extern ShaderStorage shaderStorage;

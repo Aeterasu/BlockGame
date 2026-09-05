@@ -1,7 +1,7 @@
 #include "renderer.h"
 
 #include "shader_storage.h"
-#include "sprite.h"
+#include "quad.h"
 
 #include <algorithm>
 #include <glm/glm.hpp>
@@ -97,37 +97,37 @@ namespace blockgame
 		glBindVertexArray(0);
 	}
 
-	SpriteHandle Renderer::AddSprite(const Sprite& sprite)
+	QuadHandle Renderer::AddQuad(const Quad& quad)
 	{
-		SpriteHandle h = nextHandle++;
-		activeSprites.push_back(sprite);
+		QuadHandle h = nextHandle++;
+		activeQuads.push_back(quad);
 		handles.push_back(h);
 
-		std::cout << "Added sprite, sprite handle: " << h << "\n";
+		std::cout << "Added quad, quad handle: " << h << "\n";
 
 		return h;
 	}
 
-	void Renderer::RemoveSprite(SpriteHandle handle)
+	void Renderer::RemoveQuad(QuadHandle handle)
 	{
 		for (size_t i = 0; i < handles.size(); i++)
 		{
 			if (handles[i] == handle)
 			{
-				activeSprites.erase(activeSprites.begin() + i);
+				activeQuads.erase(activeQuads.begin() + i);
 				handles.erase(handles.begin() + i);
 				return;
 			}
 		}
 	}
 
-	void Renderer::UpdateSprite(SpriteHandle handle, const Sprite& sprite)
+	void Renderer::UpdateQuad(QuadHandle handle, const Quad& quad)
 	{
 		for (size_t i = 0; i < handles.size(); i++)
 		{
 			if (handles[i] == handle)
 			{
-				activeSprites[i] = sprite;
+				activeQuads[i] = quad;
 				return;
 			}
 		}
@@ -142,19 +142,19 @@ namespace blockgame
 
 		if (hasLetterboxBackground)
 		{
-			blockgame::DrawSprite(letterboxBackground, windowProjection, quadVao);
+			blockgame::DrawQuad(letterboxBackground, windowProjection, quadVao);
 		}
 
 		glViewport(viewport.x, viewport.y, viewport.w, viewport.h);
 
-		std::vector<size_t> drawOrder(activeSprites.size());
+		std::vector<size_t> drawOrder(activeQuads.size());
 		std::iota(drawOrder.begin(), drawOrder.end(), 0);
 		std::stable_sort(drawOrder.begin(), drawOrder.end(),
-						 [&](size_t a, size_t b) { return activeSprites[a].zIndex < activeSprites[b].zIndex; });
+						 [&](size_t a, size_t b) { return activeQuads[a].zIndex < activeQuads[b].zIndex; });
 
 		for (size_t i : drawOrder)
 		{
-			blockgame::DrawSprite(activeSprites[i], projection, quadVao);
+			blockgame::DrawQuad(activeQuads[i], projection, quadVao);
 		}
 	}
 
@@ -189,9 +189,7 @@ namespace blockgame
 
 	void Renderer::SetLetterboxBackground(Texture* texture)
 	{
-		letterboxBackground.texture = texture;
-		letterboxBackground.shader = &shaderStorage.spriteShader;
-		letterboxBackground.tint = glm::vec4(1.0f);
+		letterboxBackground.ApplyTexture(texture);
 		hasLetterboxBackground = true;
 	}
 } // namespace blockgame

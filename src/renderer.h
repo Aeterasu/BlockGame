@@ -1,6 +1,6 @@
 #pragma once
 
-#include "sprite.h"
+#include "quad.h"
 
 #include <SDL2/SDL.h>
 #include <glm/glm.hpp>
@@ -20,21 +20,21 @@ namespace blockgame
 
 		const bool ENABLE_VSYNC = false;
 
-		Sprite letterboxBackground;
+		Quad letterboxBackground;
 		bool hasLetterboxBackground = false;
 
-		std::vector<Sprite> activeSprites;
-		std::vector<SpriteHandle> handles;
+		std::vector<Quad> activeQuads;
+		std::vector<QuadHandle> handles;
 
-		SpriteHandle nextHandle = 0;
+		QuadHandle nextHandle = 0;
 
 		GLuint quadVao = 0;
 		glm::mat4 projection{1.0f};
 		glm::mat4 windowProjection;
 
-		SpriteHandle AddSprite(const Sprite& sprite);
-		void RemoveSprite(SpriteHandle handle);
-		void UpdateSprite(SpriteHandle handle, const Sprite& sprite);
+		QuadHandle AddQuad(const Quad& quad);
+		void RemoveQuad(QuadHandle handle);
+		void UpdateQuad(QuadHandle handle, const Quad& quad);
 
 		void InitQuad();
 

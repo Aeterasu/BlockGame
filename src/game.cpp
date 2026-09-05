@@ -19,44 +19,41 @@ namespace blockgame
 	{
 		gameMode.emplace<GameMode_>();
 
-		Sprite grid;
+		Quad grid;
 		grid.size = glm::vec2(270.0f, 270.0f);
-		grid.texture = &textureStorage.grid;
-		grid.shader = &shaderStorage.spriteShader;
+		grid.ApplyTexture(&textureStorage.grid);
 		grid.zIndex = -999999;
-		gridSpriteHandle = renderer.AddSprite(grid);
+		gridHandle = renderer.AddQuad(grid);
 
 		for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
 		{
 			blocks.at(i) = Block::NONE;
 
-			blockSprite.size = glm::vec2(26.0f, 26.0f);
-			blockSprite.texture = &textureStorage.block;
-			blockSprite.shader = &shaderStorage.spriteShader;
-			blockSpriteHandles.at(i) = renderer.AddSprite(blockSprite);
+			blockQuad.size = glm::vec2(26.0f, 26.0f);
+			blockQuad.ApplyTexture(&textureStorage.block);
+			// blockQuad.ApplyCustomShader(&shaderStorage.gradientTestShader);
+			blockHandles.at(i) = renderer.AddQuad(blockQuad);
 
 			glm::ivec2 pos = IdToGridPosition(i);
 
 			UpdateBlock(pos, Block::NONE);
 		}
 
-		cursorSprite.size = glm::vec2(26.0f, 26.0f);
-		cursorSprite.texture = &textureStorage.cursor;
-		cursorSprite.shader = &shaderStorage.spriteShader;
-		cursorSprite.zIndex = 4096;
-		cursorSpriteHandle = renderer.AddSprite(cursorSprite);
+		cursorQuad.size = glm::vec2(26.0f, 26.0f);
+		cursorQuad.ApplyTexture(&textureStorage.cursor);
+		cursorQuad.zIndex = 4096;
+		cursorHandle = renderer.AddQuad(cursorQuad);
 
-		bombSprite.size = glm::vec2(26.0f, 26.0f);
-		bombSprite.texture = &textureStorage.bomb;
-		bombSprite.shader = &shaderStorage.spriteShader;
-		bombSprite.zIndex = 2048;
+		bombQuad.size = glm::vec2(26.0f, 26.0f);
+		bombQuad.ApplyTexture(&textureStorage.bomb);
+		bombQuad.zIndex = 2048;
 
 		blockSpawnTurnsRemaining = BLOCK_SPAWN_TURNS;
 
 		scoring.score = 0;
 
 		scoreLabel.Create(fontStorage.superstar, "SCORE: 0", ColorToSDLColor(blockgame::PICO_DARK_BLUE),
-						  &blockgame::shaderStorage.spriteShader, glm::vec2(37.0f, 24.0f), 999999);
+						  glm::vec2(37.0f, 24.0f), 999999);
 
 		scoring.scoreLabel = &scoreLabel;
 
@@ -82,9 +79,10 @@ namespace blockgame
 			blockRealPositions[id].x = lerp(blockRealPositions[id].x, target.x, weight);
 			blockRealPositions[id].y = lerp(blockRealPositions[id].y, target.y, weight);
 
-			blockSprite.position = blockRealPositions[id];
-			blockSprite.tint = BlockTint(blocks[id]);
-			renderer.UpdateSprite(blockSpriteHandles.at(id), blockSprite);
+			blockQuad.position = blockRealPositions[id];
+			// TODO: change this to a proper color component system in the future
+			blockQuad.SetUniform("uTint", BlockTint(blocks[id]));
+			renderer.UpdateQuad(blockHandles.at(id), blockQuad);
 		}
 
 		// cursor
@@ -94,8 +92,8 @@ namespace blockgame
 		cursorRealPosition.x = lerp(cursorRealPosition.x, cursorTargetPosition.x, weight);
 		cursorRealPosition.y = lerp(cursorRealPosition.y, cursorTargetPosition.y, weight);
 
-		cursorSprite.position = cursorRealPosition;
-		renderer.UpdateSprite(cursorSpriteHandle, cursorSprite);
+		cursorQuad.position = cursorRealPosition;
+		renderer.UpdateQuad(cursorHandle, cursorQuad);
 
 		// score
 
@@ -171,7 +169,7 @@ namespace blockgame
 
 		blocks.at(id) = newState;
 
-		blockSprite.position = GridPositionToRealPosition(gridPosition);
+		blockQuad.position = GridPositionToRealPosition(gridPosition);
 
 		CheckForGameOverState();
 	}
@@ -393,8 +391,8 @@ namespace blockgame
 
 		isBombActive = true;
 
-		bombSprite.position = GridPositionToRealPosition(bombGridPosition);
-		bombSpriteHandle = renderer.AddSprite(bombSprite);
+		bombQuad.position = GridPositionToRealPosition(bombGridPosition);
+		bombHandle = renderer.AddQuad(bombQuad);
 	}
 
 	void Game::ExplodeBomb()
@@ -441,6 +439,6 @@ namespace blockgame
 			}
 		}
 
-		renderer.RemoveSprite(bombSpriteHandle);
+		renderer.RemoveQuad(bombHandle);
 	}
 } // namespace blockgame
