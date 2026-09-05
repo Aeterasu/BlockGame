@@ -51,7 +51,7 @@ namespace blockgame
 		bombSprite.shader = &shaderStorage.spriteShader;
 		bombSprite.zIndex = 2048;
 
-		blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
+		blockSpawnTurnsRemaining = BLOCK_SPAWN_TURNS;
 
 		scoring.score = 0;
 
@@ -87,45 +87,6 @@ namespace blockgame
 			renderer.UpdateSprite(blockSpriteHandles.at(id), blockSprite);
 		}
 
-		// block spawn
-
-		blockSpawnTimeRemaining -= delta;
-
-		if (blockSpawnTimeRemaining <= 0.0)
-		{
-			int i = 0;
-
-			while (i < 99)
-			{
-				int32_t x = (Random_NextByte() % 8);
-				int32_t y = (Random_NextByte() % 8);
-
-				if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE)
-				{
-					UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
-					break;
-				}
-				else
-				{
-					i++;
-				}
-			}
-
-			blockSpawnTimeRemaining = BLOCK_SPAWN_TIME;
-		}
-
-		// bomb
-
-		if (isBombActive)
-		{
-			bombTimeLeft -= delta;
-
-			if (bombTimeLeft <= 0.0)
-			{
-				ExplodeBomb();
-			}
-		}
-
 		// cursor
 
 		auto cursorTargetPosition = GridPositionToRealPosition(cursorGridPosition);
@@ -156,6 +117,52 @@ namespace blockgame
 		{
 			return;
 		}
+	}
+
+	void Game::TickTurn()
+	{
+		blockSpawnTurnsRemaining -= 1;
+
+		// block spawn
+
+		if (blockSpawnTurnsRemaining <= 0)
+		{
+			uint8_t i = 0;
+
+			while (i < 99)
+			{
+				int32_t x = (Random_NextByte() % 8);
+				int32_t y = (Random_NextByte() % 8);
+
+				if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE)
+				{
+					UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
+					break;
+				}
+				else
+				{
+					i++;
+				}
+			}
+
+			blockSpawnTurnsRemaining = BLOCK_SPAWN_TURNS;
+		}
+
+		// bomb
+
+		if (isBombActive)
+		{
+			bombTurnsLeft -= 1;
+
+			if (bombTurnsLeft <= 0)
+			{
+				ExplodeBomb();
+			}
+		}
+
+		// scoring
+
+		scoring.TickTurn();
 	}
 
 	void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
@@ -278,6 +285,8 @@ namespace blockgame
 
 	void Game::MoveCursor(const glm::ivec2 dir)
 	{
+		TickTurn();
+
 		if (!isDragging)
 		{
 			cursorGridPosition += dir;
@@ -380,7 +389,7 @@ namespace blockgame
 		}
 
 		bombGridPosition = cursorGridPosition;
-		bombTimeLeft = BOMB_TIMER;
+		bombTurnsLeft = BOMB_EXPLOSION_TURNS;
 
 		isBombActive = true;
 

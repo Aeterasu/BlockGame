@@ -10,11 +10,8 @@ namespace blockgame
 	{
 		std::uint64_t score = 0;
 
-		const std::uint64_t DRAIN_AMOUNT = 50;
+		const std::uint64_t DRAIN_AMOUNT = 25;
 
-		const double DRAIN_DELAY = 5.0;
-		const double DRAIN_RATE = 0.333;
-		double drainTimer = 0.0;
 		bool isDraining = false;
 
 		const std::uint64_t BASE_REWARD = 100;
@@ -58,6 +55,7 @@ namespace blockgame
 		void AwardScore(const uint64_t combo);
 
 		void Tick(const double delta);
+		void TickTurn();
 
 		void DrainScore();
 	};

@@ -13,7 +13,6 @@ namespace blockgame
 
 		scoringLerpTime = 0.0;
 
-		drainTimer = 0.0;
 		isDraining = false;
 
 		std::cout << "multiplier: " << GetComboMultiplier(combo) << "\n";
@@ -21,24 +20,6 @@ namespace blockgame
 
 	void Scoring::Tick(const double delta)
 	{
-		drainTimer += delta;
-
-		if (isDraining)
-		{
-			if (drainTimer >= DRAIN_RATE)
-			{
-				DrainScore();
-				drainTimer = 0.0;
-			}
-		}
-		else
-		{
-			if (drainTimer >= DRAIN_DELAY)
-			{
-				isDraining = true;
-			}
-		}
-
 		// label
 
 		scoringLerpTime = std::min(scoringLerpTime + delta * 5.0, 1.0);
@@ -53,6 +34,11 @@ namespace blockgame
 				scoreLabel->SetText("SCORE: " + FormatScore(displayedScore));
 			}
 		}
+	}
+
+	void Scoring::TickTurn()
+	{
+		DrainScore();
 	}
 
 	void Scoring::DrainScore()

@@ -53,8 +53,8 @@ namespace blockgame
 
 		bool isGameOver = false;
 
-		const double BLOCK_SPAWN_TIME = 1.5;
-		double blockSpawnTimeRemaining = 0.0;
+		const int32_t BLOCK_SPAWN_TURNS = 6;
+		int32_t blockSpawnTurnsRemaining = 0;
 
 		std::array<Block, 64> blocks;
 		std::array<SpriteHandle, 64> blockSpriteHandles;
@@ -67,10 +67,10 @@ namespace blockgame
 
 		glm::ivec2 bombGridPosition{0, 0};
 		bool isBombActive = false;
-		double bombTimeLeft = 0.0;
-		const double BOMB_TIMER = 1.0;
+		int32_t bombTurnsLeft = 0;
+		const int32_t BOMB_EXPLOSION_TURNS = 3;
 
-		const double GAME_OVER_TIME_LIMIT = 1.5;
+		const double GAME_OVER_TIME_LIMIT = 1.0;
 		double gameOverTimer = 0.0;
 		bool potentialGameOver = false;
 
@@ -91,6 +91,7 @@ namespace blockgame
 		template <typename GameMode_> void Init();
 
 		void Tick(const double delta);
+		void TickTurn();
 		void UpdateBlock(const glm::ivec2 gridPosition, const Block newState);
 
 		glm::vec2 GridPositionToRealPosition(const glm::ivec2 gridPosition);
