@@ -23,7 +23,12 @@ uint8_t table[256] = {
 };
 // clang-format on
 
-std::size_t ptr = 0;
+static std::size_t ptr = 0;
+
+void Random_SetSeed(std::size_t seed)
+{
+	ptr = seed % 256;
+}
 
 uint8_t Random_NextByte()
 {

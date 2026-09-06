@@ -70,10 +70,17 @@ namespace blockgame
 
 		scoring.score = 0;
 
+		difficulty.ResetRank();
+
 		scoreLabel.Create(fontStorage.superstar, "SCORE: 0", ColorToSDLColor(blockgame::PICO_DARK_BLUE),
 						  glm::vec2(37.0f, 24.0f), 999999);
 
 		scoring.scoreLabel = &scoreLabel;
+
+		for (size_t i = 0; i < STARTING_BLOCKS_COUNT; i++)
+		{
+			SpawnRandomBlock(true);
+		}
 
 		log("Game initialized!");
 	}
@@ -165,6 +172,39 @@ namespace blockgame
 		}
 	}
 
+	void Game::SpawnRandomBlock(const bool instant)
+	{
+		size_t i = 0;
+		Block block = static_cast<Block>(1 + Random_NextByte() % 3);
+
+		while (i < 99)
+		{
+			int32_t x = (Random_NextByte() % 8);
+			int32_t y = (Random_NextByte() % 8);
+
+			if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE)
+			{
+				if (instant)
+				{
+					UpdateBlock(glm::ivec2{x, y}, block);
+				}
+				else
+				{
+					size_t id = GridPositionToId(glm::ivec2{x, y});
+					blockTelegraphProgress.at(id) = BLOCK_TELEGRAPH_TURNS;
+					blockTelegraphColors.at(id) = block;
+					blockTelegraphRealProgress.at(id) = 1.0f;
+				}
+
+				break;
+			}
+			else
+			{
+				i++;
+			}
+		}
+	}
+
 	void Game::TickTurn()
 	{
 		// telegrpahs
@@ -188,30 +228,7 @@ namespace blockgame
 
 		if (blockSpawnTurnsRemaining <= 0)
 		{
-			uint8_t i = 0;
-
-			while (i < 99)
-			{
-				int32_t x = (Random_NextByte() % 8);
-				int32_t y = (Random_NextByte() % 8);
-
-				if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE)
-				{
-					// UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
-					Block block = static_cast<Block>(1 + Random_NextByte() % 3);
-					size_t id = GridPositionToId(glm::ivec2{x, y});
-					blockTelegraphProgress.at(id) = BLOCK_TELEGRAPH_TURNS;
-					blockTelegraphColors.at(id) = block;
-					blockTelegraphRealProgress.at(id) = 1.0f;
-
-					log("Spawn block telegraph!");
-					break;
-				}
-				else
-				{
-					i++;
-				}
-			}
+			SpawnRandomBlock();
 
 			blockSpawnTurnsRemaining = BLOCK_SPAWN_TURNS;
 		}
@@ -231,7 +248,7 @@ namespace blockgame
 		// scoring
 
 		scoring.TickTurn();
-	}
+	} // namespace blockgame
 
 	void Game::UpdateBlock(const glm::ivec2 gridPosition, const Block newState)
 	{

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "block.h"
+#include "difficulty.h"
 #include "quad.h"
 #include "scoring.h"
 #include "text.h"
@@ -12,15 +13,6 @@
 
 namespace blockgame
 {
-	enum class Difficulty : uint8_t
-	{
-		LEVEL_1,
-		LEVEL_2,
-		LEVEL_3,
-		LEVEL_4,
-		LEVEL_5,
-	};
-
 	// limited time, score as much as possible
 	struct BlitzMode
 	{
@@ -57,6 +49,8 @@ namespace blockgame
 		int32_t blockSpawnTurnsRemaining = 0;
 
 		const int32_t BLOCK_TELEGRAPH_TURNS = 6;
+
+		const size_t STARTING_BLOCKS_COUNT = 12;
 
 		std::array<Block, 64> blocks;
 		std::array<QuadHandle, 64> blockHandles;
@@ -95,6 +89,8 @@ namespace blockgame
 		Quad bombQuad;
 		QuadHandle bombHandle;
 
+		Difficulty difficulty;
+
 		Scoring scoring;
 		Label scoreLabel;
 
@@ -103,6 +99,7 @@ namespace blockgame
 		void Tick(const double delta);
 		void TickTurn();
 		void UpdateBlock(const glm::ivec2 gridPosition, const Block newState);
+		void SpawnRandomBlock(const bool instant = false);
 
 		glm::vec2 GridPositionToRealPosition(const glm::ivec2 gridPosition, const float size = 23.0f,
 											 const float offset = 0.0f);

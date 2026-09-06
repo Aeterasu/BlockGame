@@ -2,8 +2,10 @@
 #include "font_storage.h"
 #include "game.h"
 #include "gl_compatibility.h"
+#include "log.h"
 #include "pico_palette.h"
 #include "renderer.h"
+#include "rng.h"
 #include "shader_storage.h"
 #include "text.h"
 #include "texture_storage.h"
@@ -15,7 +17,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "log.h"
 
 namespace
 {
@@ -208,6 +209,8 @@ int main()
 	blockgame::InitFontStorage();
 
 	CreateGlobalVisuals(); // border and other screen space stuff we may have
+
+	Random_SetSeed(SDL_GetTicks());
 
 	InitGame();
 
