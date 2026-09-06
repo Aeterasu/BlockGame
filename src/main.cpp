@@ -2,6 +2,7 @@
 #include "font_storage.h"
 #include "game.h"
 #include "gl_compatibility.h"
+#include "input.h"
 #include "log.h"
 #include "pico_palette.h"
 #include "renderer.h"
@@ -68,47 +69,6 @@ namespace
 			{
 				running = false;
 			}
-			else if (event.type == SDL_KEYDOWN)
-			{
-				if (event.key.repeat == 0)
-				{
-					if (event.key.keysym.sym == SDLK_ESCAPE)
-					{
-						running = false;
-					}
-					else
-					{
-						switch (event.key.keysym.sym)
-						{
-							case SDLK_UP:
-								game.MoveCursor(glm::ivec2(0, -1));
-								break;
-							case SDLK_DOWN:
-								game.MoveCursor(glm::ivec2(0, 1));
-								break;
-							case SDLK_LEFT:
-								game.MoveCursor(glm::ivec2(-1, 0));
-								break;
-							case SDLK_RIGHT:
-								game.MoveCursor(glm::ivec2(1, 0));
-								break;
-							case SDLK_z:
-								game.isDragging = true;
-								break;
-							case SDLK_x:
-								game.PlaceBomb();
-								break;
-						}
-					}
-				}
-			}
-			else if (event.type == SDL_KEYUP)
-			{
-				if (event.key.keysym.sym == SDLK_z)
-				{
-					game.isDragging = false;
-				}
-			}
 			else if (event.type == SDL_WINDOWEVENT)
 			{
 				if (event.window.event == SDL_WINDOWEVENT_RESIZED || event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
@@ -116,6 +76,8 @@ namespace
 					blockgame::renderer.OnResize(event.window.data1, event.window.data2);
 				}
 			}
+
+			blockgame::input::ProcessEvent(event);
 		}
 
 		std::uint64_t now = SDL_GetPerformanceCounter();
@@ -140,6 +102,7 @@ namespace
 		{
 			game.Tick(fixedDeltaTime);
 			accumulator -= fixedDeltaTime;
+			blockgame::input::OnTickEnd();
 		}
 
 		blockgame::renderer.DrawFrame();
@@ -207,6 +170,7 @@ int main()
 	blockgame::InitTextureStorage();
 	blockgame::InitShaderStorage();
 	blockgame::InitFontStorage();
+	blockgame::input::Init();
 
 	CreateGlobalVisuals(); // border and other screen space stuff we may have
 

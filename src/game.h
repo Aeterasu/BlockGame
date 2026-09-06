@@ -111,7 +111,7 @@ namespace blockgame
 
 		void CheckForGameOverState();
 
-		glm::vec4 BlockTint(const Block block);
+		glm::vec4 GetBlockTint(const Block block);
 
 		std::vector<size_t> GetConnectedGroup(const glm::ivec2 startPos);
 		void MoveCursor(const glm::ivec2 dir);

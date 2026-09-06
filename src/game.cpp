@@ -2,6 +2,7 @@
 
 #include "color.h"
 #include "font_storage.h"
+#include "input.h"
 #include "lerp.h"
 #include "log.h"
 #include "pico_palette.h"
@@ -95,6 +96,39 @@ namespace blockgame
 			return;
 		}
 
+		// input
+
+		if (input::IsButtonJustPressed(input::Button::UP))
+		{
+			MoveCursor(glm::ivec2(0, -1));
+		}
+		if (input::IsButtonJustPressed(input::Button::DOWN))
+		{
+			MoveCursor(glm::ivec2(0, 1));
+		}
+		if (input::IsButtonJustPressed(input::Button::LEFT))
+		{
+			MoveCursor(glm::ivec2(-1, 0));
+		}
+		if (input::IsButtonJustPressed(input::Button::RIGHT))
+		{
+			MoveCursor(glm::ivec2(1, 0));
+		}
+
+		if (input::IsButtonHeld(input::Button::BUTTON_1))
+		{
+			isDragging = true;
+		}
+		if (input::IsButtonJustReleased(input::Button::BUTTON_1))
+		{
+			isDragging = false;
+		}
+
+		if (input::IsButtonJustPressed(input::Button::BUTTON_2))
+		{
+			PlaceBomb();
+		}
+
 		// blocks sliding
 
 		for (size_t id = 0; id < blocks.size(); id++)
@@ -106,7 +140,7 @@ namespace blockgame
 
 			blockQuad.position = blockRealPositions.at(id);
 			// TODO: change this to a proper color component system in the future
-			blockQuad.SetUniform("uTint", BlockTint(blocks.at(id)));
+			blockQuad.SetUniform("uTint", GetBlockTint(blocks.at(id)));
 			renderer.UpdateQuad(blockHandles.at(id), blockQuad);
 
 			// telegraphs
@@ -114,7 +148,7 @@ namespace blockgame
 			auto pos = IdToGridPosition(id);
 			telegraphQuad.position = glm::vec2(42.0f + (pos.x * 23.0f), 43.0f + (pos.y * 23.0f));
 			telegraphQuad.isVisible = blockTelegraphProgress.at(id) > -1;
-			telegraphQuad.SetUniform("uTint", BlockTint(blockTelegraphColors.at(id)));
+			telegraphQuad.SetUniform("uTint", GetBlockTint(blockTelegraphColors.at(id)));
 
 			blockTelegraphRealProgress.at(id) =
 				lerp(blockTelegraphRealProgress.at(id),
@@ -130,7 +164,7 @@ namespace blockgame
 			{
 				warningQuad.isVisible = true;
 				warningQuad.position = GridPositionToRealPosition(pos) + glm::vec2(4.0f, 4.0f);
-				warningQuad.SetUniform("uTint", BlockTint(blockTelegraphColors.at(id)));
+				warningQuad.SetUniform("uTint", GetBlockTint(blockTelegraphColors.at(id)));
 				renderer.UpdateQuad(blockWarningHandles.at(id), warningQuad);
 			}
 			else
@@ -275,7 +309,7 @@ namespace blockgame
 		}
 	}
 
-	glm::vec4 Game::BlockTint(const Block block)
+	glm::vec4 Game::GetBlockTint(const Block block)
 	{
 		switch (block)
 		{
