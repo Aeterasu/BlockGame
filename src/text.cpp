@@ -2,7 +2,7 @@
 
 #include "renderer.h"
 
-#include <iostream>
+#include "log.h"
 
 namespace blockgame
 {
@@ -17,7 +17,7 @@ namespace blockgame
 
 		if (surface == nullptr)
 		{
-			std::cout << "TTF_RenderUTF8_Blended failed: " << TTF_GetError() << "\n";
+			log_err("TTF_RenderUTF8_Blended failed: ", TTF_GetError());
 			return Texture{};
 		}
 
@@ -26,7 +26,7 @@ namespace blockgame
 
 		if (converted == nullptr)
 		{
-			std::cout << "SDL_ConvertSurfaceFormat failed: " << SDL_GetError() << "\n";
+			log_err("SDL_ConvertSurfaceFormat failed: ", SDL_GetError());
 			return Texture{};
 		}
 

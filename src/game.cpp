@@ -3,6 +3,7 @@
 #include "color.h"
 #include "font_storage.h"
 #include "lerp.h"
+#include "log.h"
 #include "pico_palette.h"
 #include "renderer.h"
 #include "rng.h"
@@ -10,7 +11,6 @@
 #include "texture_storage.h"
 
 #include <SDL2/SDL.h>
-#include <iostream>
 #include <unordered_map>
 
 namespace blockgame
@@ -27,17 +27,18 @@ namespace blockgame
 
 		blockQuad.size = glm::vec2(26.0f, 26.0f);
 		blockQuad.ApplyTexture(&textureStorage.block);
+		blockQuad.zIndex = 2;
 
 		telegraphQuad.size = glm::vec2(23.0f, 23.0f);
 		telegraphQuad.ApplyCustomShader(&shaderStorage.blockTelegraphShader);
 		telegraphQuad.SetUniform("uTexture", &textureStorage.blockTelegraph);
 		telegraphQuad.isVisible = false;
+		telegraphQuad.zIndex = 1;
 
 		for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
 		{
 			blocks.at(i) = Block::NONE;
 
-			// blockQuad.ApplyCustomShader(&shaderStorage.gradientTestShader);
 			blockHandles.at(i) = renderer.AddQuad(blockQuad);
 			blockTelegraphProgress.at(i) = -1;
 			blockTelegraphRealProgress.at(i) = 1.0;
@@ -66,7 +67,7 @@ namespace blockgame
 
 		scoring.scoreLabel = &scoreLabel;
 
-		std::cout << "Game initialized!\n";
+		log("Game initialized!");
 	}
 	template void Game::Init<BlitzMode>();
 	template void Game::Init<EndlessMode>();
@@ -132,7 +133,7 @@ namespace blockgame
 			if (gameOverTimer > GAME_OVER_TIME_LIMIT)
 			{
 				isGameOver = true;
-				std::cout << "Game over!" << "\n";
+				log("Game over!");
 			}
 		}
 		else
@@ -180,7 +181,7 @@ namespace blockgame
 					blockTelegraphColors.at(id) = block;
 					blockTelegraphRealProgress.at(id) = 1.0f;
 
-					std::cout << "Spawn block telegraph!" << "\n";
+					log("Spawn block telegraph!");
 					break;
 				}
 				else
@@ -486,7 +487,7 @@ namespace blockgame
 			for (const auto& [_, value] : comboCounter)
 			{
 				scoring.AwardScore(value);
-				std::cout << "Score awarded! Combo counter: " << value << "\n";
+				log("Score awarded! Combo counter: ", value);
 			}
 		}
 

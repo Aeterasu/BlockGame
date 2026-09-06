@@ -15,7 +15,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
+#include "log.h"
 
 namespace
 {
@@ -180,12 +180,12 @@ int main()
 {
 	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
-		std::cout << "SDL_Init failed: " << SDL_GetError() << "\n";
+		log_err("SDL_Init failed: ", SDL_GetError());
 	}
 
 	if (TTF_Init() != 0)
 	{
-		std::cout << "TTF_Init failed: " << TTF_GetError() << "\n";
+		log_err("TTF_Init failed: ", TTF_GetError());
 	}
 
 	bool gl = blockgame::renderer.InitGL();

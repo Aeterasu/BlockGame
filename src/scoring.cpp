@@ -3,7 +3,7 @@
 #include "lerp.h"
 
 #include <algorithm>
-#include <iostream>
+#include "log.h"
 
 namespace blockgame
 {
@@ -15,7 +15,7 @@ namespace blockgame
 
 		isDraining = false;
 
-		std::cout << "multiplier: " << GetComboMultiplier(combo) << "\n";
+		log("multiplier: ", GetComboMultiplier(combo));
 	}
 
 	void Scoring::Tick(const double delta)

@@ -1,6 +1,7 @@
 #include "shader.h"
 
 #include "file.h"
+#include "log.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -12,8 +13,11 @@ constexpr const char* kShaderHeader = "#version 330 core\n";
 
 namespace blockgame
 {
-	Shader LoadShader(const std::string& vertPath, const std::string& fragPath)
+	Shader LoadShader(const std::string& vertFilename, const std::string& fragFilename)
 	{
+		std::string vertPath = "assets/shaders/" + vertFilename;
+		std::string fragPath = "assets/shaders/" + fragFilename;
+
 		GLuint vs = CompileShader(GL_VERTEX_SHADER, vertPath);
 		GLuint fs = CompileShader(GL_FRAGMENT_SHADER, fragPath);
 
@@ -42,9 +46,9 @@ namespace blockgame
 
 		if (!linked)
 		{
-			char log[512];
-			glGetProgramInfoLog(program, sizeof(log), nullptr, log);
-			std::fprintf(stderr, "Shader link error (%s / %s): %s\n", vertPath.c_str(), fragPath.c_str(), log);
+			char logBuf[512];
+			glGetProgramInfoLog(program, sizeof(logBuf), nullptr, logBuf);
+			log_err("Shader link error (", vertFilename, " / ", fragFilename, "): ", logBuf);
 			glDeleteShader(vs);
 			glDeleteShader(fs);
 			glDeleteProgram(program);
@@ -79,9 +83,9 @@ namespace blockgame
 
 		if (!success)
 		{
-			char log[512];
-			glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-			std::fprintf(stderr, "Shader compile error: %s\n", log);
+			char logBuf[512];
+			glGetShaderInfoLog(shader, sizeof(logBuf), nullptr, logBuf);
+			log_err("Shader compile error: ", logBuf);
 			return 0;
 		}
 

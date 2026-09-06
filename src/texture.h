@@ -14,5 +14,5 @@ namespace blockgame
 		int height = 0;
 	};
 
-	Texture LoadTexture(const std::string& path);
+	Texture LoadTexture(const std::string& filename);
 } // namespace blockgame

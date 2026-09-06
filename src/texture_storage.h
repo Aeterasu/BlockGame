@@ -10,6 +10,7 @@ namespace blockgame
 		Texture border;
 		Texture block;
 		Texture blockTelegraph;
+		Texture blockTelegraphWarning;
 		Texture cursor;
 		Texture bomb;
 		Texture letterboxBg;

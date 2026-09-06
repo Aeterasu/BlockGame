@@ -7,7 +7,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
+#include "log.h"
 #include <numeric>
 
 namespace blockgame
@@ -32,27 +32,27 @@ namespace blockgame
 
 		if (window == nullptr)
 		{
-			std::cout << "Game window could not be created, aborting...\n";
+			log_err("Game window could not be created, aborting...");
 			return false;
 		}
 
 		glContext = SDL_GL_CreateContext(window);
 		if (!glContext)
 		{
-			std::cout << "SDL_GL_CreateContext failed: " << SDL_GetError() << "\n";
+			log_err("SDL_GL_CreateContext failed: ", SDL_GetError());
 			return false;
 		}
 
 #ifndef __EMSCRIPTEN__
 		if (!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
 		{
-			std::cout << "Failed to load GL via GLAD\n";
+			log_err("Failed to load GL via GLAD");
 			return false;
 		}
 #endif
 
-		std::cout << "GL Version: " << glGetString(GL_VERSION) << "\n";
-		std::cout << "GL Renderer: " << glGetString(GL_RENDERER) << "\n";
+		log("GL Version: ", glGetString(GL_VERSION));
+		log("GL Renderer: ", glGetString(GL_RENDERER));
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -103,7 +103,7 @@ namespace blockgame
 		activeQuads.push_back(quad);
 		handles.push_back(h);
 
-		std::cout << "Added quad, quad handle: " << h << "\n";
+		log("Added quad, quad handle: ", h);
 
 		return h;
 	}

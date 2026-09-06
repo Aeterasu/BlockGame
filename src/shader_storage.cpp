@@ -9,9 +9,9 @@ namespace blockgame
 	void InitShaderStorage()
 	{
 		shaderStorage.spriteShader =
-			LoadShader("assets/shaders/quad.vertex.glsl", "assets/shaders/texture.fragment.glsl");
+			LoadShader("quad.vertex.glsl", "texture.fragment.glsl");
 
 		shaderStorage.blockTelegraphShader =
-			LoadShader("assets/shaders/quad.vertex.glsl", "assets/shaders/telegraph.fragment.glsl");
+			LoadShader("quad.vertex.glsl", "telegraph.fragment.glsl");
 	}
 } // namespace blockgame

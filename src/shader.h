@@ -16,7 +16,7 @@ namespace blockgame
 		GLuint id = 0;
 	};
 
-	Shader LoadShader(const std::string& vertPath, const std::string& fragPath);
+	Shader LoadShader(const std::string& vertFilename, const std::string& fragFilename);
 	GLuint CompileShader(GLenum type, const std::string& path);
 
 	void SetUniformMat4(GLuint program, const char* name, const glm::mat4& value);

@@ -8,12 +8,12 @@ namespace blockgame
 
 	void InitTextureStorage()
 	{
-		textureStorage.grid = LoadTexture("assets/textures/texture_grid.png");
-		textureStorage.border = LoadTexture("assets/textures/texture_border.png");
-		textureStorage.block = LoadTexture("assets/textures/texture_block.png");
-		textureStorage.blockTelegraph = LoadTexture("assets/textures/texture_block_telegraph.png");
-		textureStorage.cursor = LoadTexture("assets/textures/texture_cursor.png");
-		textureStorage.bomb = LoadTexture("assets/textures/texture_bomb.png");
-		textureStorage.letterboxBg = LoadTexture("assets/textures/me.png");
+		textureStorage.grid = LoadTexture("texture_grid.png");
+		textureStorage.border = LoadTexture("texture_border.png");
+		textureStorage.block = LoadTexture("texture_block.png");
+		textureStorage.blockTelegraph = LoadTexture("texture_block_telegraph.png");
+		textureStorage.cursor = LoadTexture("texture_cursor.png");
+		textureStorage.bomb = LoadTexture("texture_bomb.png");
+		textureStorage.letterboxBg = LoadTexture("me.png");
 	}
 } // namespace blockgame

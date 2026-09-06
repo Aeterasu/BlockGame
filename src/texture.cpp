@@ -1,16 +1,19 @@
 #include "texture.h"
 
+#include "log.h"
+
 #include <SDL_image.h>
 
 namespace blockgame
 {
-	Texture LoadTexture(const std::string& path)
+	Texture LoadTexture(const std::string& filename)
 	{
+		std::string path = "assets/textures/" + filename;
 		SDL_Surface* surface = IMG_Load(path.c_str());
 
 		if (surface == nullptr)
 		{
-			std::fprintf(stderr, "IMG_Load failed for %s: %s\n", path.c_str(), IMG_GetError());
+			log_err("IMG_Load failed for ", path, ": ", IMG_GetError());
 			return Texture{};
 		}
 
@@ -19,7 +22,7 @@ namespace blockgame
 
 		if (converted == nullptr)
 		{
-			std::fprintf(stderr, "SDL_ConvertSurfaceFormat failed for %s: %s\n", path.c_str(), SDL_GetError());
+			log_err("SDL_ConvertSurfaceFormat failed for ", path, ": ", SDL_GetError());
 
 			return Texture{};
 		}

@@ -1,5 +1,7 @@
 #include "file.h"
 
+#include "log.h"
+
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -11,7 +13,7 @@ namespace blockgame
 		std::ifstream file(path);
 		if (!file)
 		{
-			std::fprintf(stderr, "Failed to open file: %s\n", path.c_str());
+			log_err("Failed to open file: ", path);
 			return "";
 		}
 		std::stringstream buffer;
