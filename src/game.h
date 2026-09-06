@@ -67,6 +67,8 @@ namespace blockgame
 		std::array<Block, 64> blockTelegraphColors;
 		std::array<QuadHandle, 64> blockTelegraphHandles;
 
+		std::array<QuadHandle, 64> blockWarningHandles;
+
 		glm::ivec2 cursorGridPosition{0, GRID_SIZE.y - 1};
 		glm::vec2 cursorRealPosition{0.0f, 0.0f};
 
@@ -83,6 +85,7 @@ namespace blockgame
 
 		Quad blockQuad;
 		Quad telegraphQuad;
+		Quad warningQuad;
 
 		QuadHandle gridHandle;
 

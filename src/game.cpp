@@ -35,14 +35,22 @@ namespace blockgame
 		telegraphQuad.isVisible = false;
 		telegraphQuad.zIndex = 1;
 
+		warningQuad.size = glm::vec2(18.0f, 18.0f);
+		warningQuad.ApplyTexture(&textureStorage.blockTelegraphWarning);
+		warningQuad.isVisible = false;
+		warningQuad.zIndex = 3;
+
 		for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
 		{
 			blocks.at(i) = Block::NONE;
 
 			blockHandles.at(i) = renderer.AddQuad(blockQuad);
+
 			blockTelegraphProgress.at(i) = -1;
 			blockTelegraphRealProgress.at(i) = 1.0;
 			blockTelegraphHandles.at(i) = renderer.AddQuad(telegraphQuad);
+
+			blockWarningHandles.at(i) = renderer.AddQuad(warningQuad);
 
 			glm::ivec2 pos = IdToGridPosition(i);
 
@@ -86,12 +94,12 @@ namespace blockgame
 		{
 			glm::vec2 target = GridPositionToRealPosition(IdToGridPosition(id));
 			float weight = 1.0f - std::exp(-20.0f * delta); // same feel as the cursor
-			blockRealPositions[id].x = lerp(blockRealPositions[id].x, target.x, weight);
-			blockRealPositions[id].y = lerp(blockRealPositions[id].y, target.y, weight);
+			blockRealPositions.at(id).x = lerp(blockRealPositions.at(id).x, target.x, weight);
+			blockRealPositions.at(id).y = lerp(blockRealPositions.at(id).y, target.y, weight);
 
-			blockQuad.position = blockRealPositions[id];
+			blockQuad.position = blockRealPositions.at(id);
 			// TODO: change this to a proper color component system in the future
-			blockQuad.SetUniform("uTint", BlockTint(blocks[id]));
+			blockQuad.SetUniform("uTint", BlockTint(blocks.at(id)));
 			renderer.UpdateQuad(blockHandles.at(id), blockQuad);
 
 			// telegraphs
@@ -99,7 +107,7 @@ namespace blockgame
 			auto pos = IdToGridPosition(id);
 			telegraphQuad.position = glm::vec2(42.0f + (pos.x * 23.0f), 43.0f + (pos.y * 23.0f));
 			telegraphQuad.isVisible = blockTelegraphProgress.at(id) > -1;
-			telegraphQuad.SetUniform("uTint", BlockTint(blockTelegraphColors[id]));
+			telegraphQuad.SetUniform("uTint", BlockTint(blockTelegraphColors.at(id)));
 
 			blockTelegraphRealProgress.at(id) =
 				lerp(blockTelegraphRealProgress.at(id),
@@ -108,6 +116,21 @@ namespace blockgame
 
 			telegraphQuad.SetUniform("uProgress", blockTelegraphRealProgress.at(id));
 			renderer.UpdateQuad(blockTelegraphHandles.at(id), telegraphQuad);
+
+			// warnings
+
+			if (blocks.at(id) != Block::NONE and blockTelegraphProgress.at(id) >= 0)
+			{
+				warningQuad.isVisible = true;
+				warningQuad.position = GridPositionToRealPosition(pos) + glm::vec2(4.0f, 4.0f);
+				warningQuad.SetUniform("uTint", BlockTint(blockTelegraphColors.at(id)));
+				renderer.UpdateQuad(blockWarningHandles.at(id), warningQuad);
+			}
+			else
+			{
+				warningQuad.isVisible = false;
+				renderer.UpdateQuad(blockWarningHandles.at(id), warningQuad);
+			}
 		}
 
 		// cursor
