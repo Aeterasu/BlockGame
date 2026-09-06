@@ -25,14 +25,23 @@ namespace blockgame
 		grid.zIndex = -999999;
 		gridHandle = renderer.AddQuad(grid);
 
+		blockQuad.size = glm::vec2(26.0f, 26.0f);
+		blockQuad.ApplyTexture(&textureStorage.block);
+
+		telegraphQuad.size = glm::vec2(23.0f, 23.0f);
+		telegraphQuad.ApplyCustomShader(&shaderStorage.blockTelegraphShader);
+		telegraphQuad.SetUniform("uTexture", &textureStorage.blockTelegraph);
+		telegraphQuad.isVisible = false;
+
 		for (size_t i = 0; i < GRID_SIZE.x * GRID_SIZE.y; i++)
 		{
 			blocks.at(i) = Block::NONE;
 
-			blockQuad.size = glm::vec2(26.0f, 26.0f);
-			blockQuad.ApplyTexture(&textureStorage.block);
 			// blockQuad.ApplyCustomShader(&shaderStorage.gradientTestShader);
 			blockHandles.at(i) = renderer.AddQuad(blockQuad);
+			blockTelegraphProgress.at(i) = -1;
+			blockTelegraphRealProgress.at(i) = 1.0;
+			blockTelegraphHandles.at(i) = renderer.AddQuad(telegraphQuad);
 
 			glm::ivec2 pos = IdToGridPosition(i);
 
@@ -83,6 +92,21 @@ namespace blockgame
 			// TODO: change this to a proper color component system in the future
 			blockQuad.SetUniform("uTint", BlockTint(blocks[id]));
 			renderer.UpdateQuad(blockHandles.at(id), blockQuad);
+
+			// telegraphs
+
+			auto pos = IdToGridPosition(id);
+			telegraphQuad.position = glm::vec2(42.0f + (pos.x * 23.0f), 43.0f + (pos.y * 23.0f));
+			telegraphQuad.isVisible = blockTelegraphProgress.at(id) > -1;
+			telegraphQuad.SetUniform("uTint", BlockTint(blockTelegraphColors[id]));
+
+			blockTelegraphRealProgress.at(id) =
+				lerp(blockTelegraphRealProgress.at(id),
+					 static_cast<float>(blockTelegraphProgress.at(id) / static_cast<float>(BLOCK_TELEGRAPH_TURNS)),
+					 1.0f - std::exp(-20.0f * delta));
+
+			telegraphQuad.SetUniform("uProgress", blockTelegraphRealProgress.at(id));
+			renderer.UpdateQuad(blockTelegraphHandles.at(id), telegraphQuad);
 		}
 
 		// cursor
@@ -119,9 +143,24 @@ namespace blockgame
 
 	void Game::TickTurn()
 	{
-		blockSpawnTurnsRemaining -= 1;
+		// telegrpahs
+
+		for (size_t id = 0; id < 64; id++)
+		{
+			if (blockTelegraphProgress.at(id) > -1)
+			{
+				blockTelegraphProgress.at(id) -= 1;
+
+				if (blockTelegraphProgress.at(id) == -1)
+				{
+					UpdateBlock(IdToGridPosition(id), blockTelegraphColors.at(id));
+				}
+			}
+		}
 
 		// block spawn
+
+		blockSpawnTurnsRemaining -= 1;
 
 		if (blockSpawnTurnsRemaining <= 0)
 		{
@@ -134,7 +173,14 @@ namespace blockgame
 
 				if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE)
 				{
-					UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
+					// UpdateBlock(glm::ivec2{x, y}, (blockgame::Block)(1 + Random_NextByte() % 3));
+					Block block = static_cast<Block>(1 + Random_NextByte() % 3);
+					size_t id = GridPositionToId(glm::ivec2{x, y});
+					blockTelegraphProgress.at(id) = BLOCK_TELEGRAPH_TURNS;
+					blockTelegraphColors.at(id) = block;
+					blockTelegraphRealProgress.at(id) = 1.0f;
+
+					std::cout << "Spawn block telegraph!" << "\n";
 					break;
 				}
 				else
@@ -203,9 +249,9 @@ namespace blockgame
 		}
 	}
 
-	glm::vec2 Game::GridPositionToRealPosition(const glm::ivec2 gridPosition)
+	glm::vec2 Game::GridPositionToRealPosition(const glm::ivec2 gridPosition, const float size, const float offset)
 	{
-		return glm::vec2(39.0f + gridPosition.x * 23.0f, 41.0f + gridPosition.y * 23.0f);
+		return glm::vec2(39.0f + (gridPosition.x * size) + offset, 41.0f + (gridPosition.y * size) + offset);
 	}
 
 	size_t Game::GridPositionToId(const glm::ivec2 gridPosition)
@@ -370,6 +416,11 @@ namespace blockgame
 			blockRealPositions.at(destId) = originalRealPositions[j];
 			// UpdateBlock(newPos, originalColors[j]);
 		}
+
+		// if (movingIds.size() > 0)
+		//{
+		//	TickTurn();
+		// }
 
 		cursorGridPosition += dir;
 	}

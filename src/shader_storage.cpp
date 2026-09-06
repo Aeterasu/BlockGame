@@ -11,7 +11,7 @@ namespace blockgame
 		shaderStorage.spriteShader =
 			LoadShader("assets/shaders/quad.vertex.glsl", "assets/shaders/texture.fragment.glsl");
 
-		shaderStorage.gradientTestShader =
-			LoadShader("assets/shaders/quad.vertex.glsl", "assets/shaders/gradient.fragment.glsl");
+		shaderStorage.blockTelegraphShader =
+			LoadShader("assets/shaders/quad.vertex.glsl", "assets/shaders/telegraph.fragment.glsl");
 	}
 } // namespace blockgame

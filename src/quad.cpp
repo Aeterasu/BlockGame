@@ -8,16 +8,16 @@
 
 namespace blockgame
 {
-	void Quad::ApplyTexture(const Texture* tex)
+	void Quad::ApplyTexture(const Texture* texture)
 	{
 		shader = &shaderStorage.spriteShader;
-		uniforms["uTexture"] = tex;
+		uniforms["uTexture"] = texture;
 		uniforms["uTint"] = glm::vec4(1.0f);
 	}
 
-	void Quad::ApplyCustomShader(const Shader* shd)
+	void Quad::ApplyCustomShader(const Shader* shader_)
 	{
-		shader = shd;
+		shader = shader_;
 	}
 
 	void Quad::SetUniform(const std::string& name, UniformValue value)
@@ -27,6 +27,11 @@ namespace blockgame
 
 	void DrawQuad(const Quad& quad, const glm::mat4& projection, GLuint quadVao)
 	{
+		if (!quad.isVisible)
+		{
+			return;
+		}
+
 		GLuint program = quad.shader->id;
 
 		if (!quad.shader || program == 0)

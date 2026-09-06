@@ -20,14 +20,16 @@ namespace blockgame
 		glm::vec2 size{32.0f, 32.0f};
 		float rotation = 0.0f;
 
+		bool isVisible = true;
+
 		std::int32_t zIndex = 0;
 
 		const Shader* shader = nullptr;
 
 		std::unordered_map<std::string, UniformValue> uniforms;
 
-		void ApplyTexture(const Texture* tex);
-		void ApplyCustomShader(const Shader* shd);
+		void ApplyTexture(const Texture* texture);
+		void ApplyCustomShader(const Shader* shader);
 		void SetUniform(const std::string& name, UniformValue value);
 	};
 

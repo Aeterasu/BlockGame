@@ -53,12 +53,19 @@ namespace blockgame
 
 		bool isGameOver = false;
 
-		const int32_t BLOCK_SPAWN_TURNS = 6;
+		const int32_t BLOCK_SPAWN_TURNS = 4;
 		int32_t blockSpawnTurnsRemaining = 0;
+
+		const int32_t BLOCK_TELEGRAPH_TURNS = 6;
 
 		std::array<Block, 64> blocks;
 		std::array<QuadHandle, 64> blockHandles;
 		std::array<glm::vec2, 64> blockRealPositions;
+
+		std::array<int32_t, 64> blockTelegraphProgress;
+		std::array<float, 64> blockTelegraphRealProgress;
+		std::array<Block, 64> blockTelegraphColors;
+		std::array<QuadHandle, 64> blockTelegraphHandles;
 
 		glm::ivec2 cursorGridPosition{0, GRID_SIZE.y - 1};
 		glm::vec2 cursorRealPosition{0.0f, 0.0f};
@@ -75,7 +82,7 @@ namespace blockgame
 		bool potentialGameOver = false;
 
 		Quad blockQuad;
-		QuadHandle blockHandle;
+		Quad telegraphQuad;
 
 		QuadHandle gridHandle;
 
@@ -94,7 +101,8 @@ namespace blockgame
 		void TickTurn();
 		void UpdateBlock(const glm::ivec2 gridPosition, const Block newState);
 
-		glm::vec2 GridPositionToRealPosition(const glm::ivec2 gridPosition);
+		glm::vec2 GridPositionToRealPosition(const glm::ivec2 gridPosition, const float size = 23.0f,
+											 const float offset = 0.0f);
 		size_t GridPositionToId(const glm::ivec2 gridPosition);
 		glm::ivec2 IdToGridPosition(const size_t id);
 		Block GetBlockAtPosition(const glm::ivec2 gridPosition);
