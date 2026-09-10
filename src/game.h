@@ -47,6 +47,19 @@ namespace blockgame
 
 	using GameMode = std::variant<BlitzMode, EndlessMode, SpeedrunMode>;
 
+	// different control types
+	struct PlayerCursorControl
+	{
+		void UpdateMove(glm::ivec2 dir);
+	};
+
+	struct PlayerSokobanControl
+	{
+		void UpdateMove(glm::ivec2 dir);
+	};
+
+	using ControlType = std::variant<PlayerCursorControl, PlayerSokobanControl>;
+
 	struct Game
 	{
 		static constexpr glm::ivec2 GRID_SIZE = glm::ivec2{8, 8};
@@ -125,6 +138,7 @@ namespace blockgame
 		glm::vec4 GetBlockTint(const Block block);
 
 		std::vector<size_t> GetConnectedGroup(const glm::ivec2 startPos);
+		bool AttemptMoveBlocks(const glm::ivec2 start, const glm::ivec2 target);
 		void MoveCursor(const glm::ivec2 dir);
 
 		void PlaceBomb();

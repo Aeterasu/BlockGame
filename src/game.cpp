@@ -284,7 +284,9 @@ namespace blockgame
 			int32_t x = (Random_NextByte() % 8);
 			int32_t y = (Random_NextByte() % 8);
 
-			if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE)
+			size_t id = GridPositionToId(glm::ivec2{x, y});
+
+			if (GetBlockAtPosition(glm::ivec2{x, y}) == Block::NONE && blockTelegraphProgress.at(id) <= -1)
 			{
 				if (instant)
 				{
@@ -292,7 +294,6 @@ namespace blockgame
 				}
 				else
 				{
-					size_t id = GridPositionToId(glm::ivec2{x, y});
 					blockTelegraphProgress.at(id) = BLOCK_TELEGRAPH_TURNS;
 					blockTelegraphColors.at(id) = block;
 					blockTelegraphRealProgress.at(id) = 1.0f;
@@ -470,26 +471,18 @@ namespace blockgame
 		return group;
 	}
 
-	void Game::MoveCursor(const glm::ivec2 dir)
+	bool Game::AttemptMoveBlocks(const glm::ivec2 start, const glm::ivec2 target)
 	{
-		TickTurn();
+		auto startBlock = GetBlockAtPosition(start);
 
-		if (!isDragging)
+		if (startBlock == Block::NONE)
 		{
-			cursorGridPosition += dir;
-			cursorGridPosition.x = std::clamp(cursorGridPosition.x, 0, GRID_SIZE.x - 1);
-			cursorGridPosition.y = std::clamp(cursorGridPosition.y, 0, GRID_SIZE.y - 1);
-			return;
+			return false;
 		}
 
-		auto currentBlock = blocks.at(GridPositionToId(cursorGridPosition));
+		auto dir = target - start;
 
-		if (currentBlock == Block::NONE)
-		{
-			return;
-		}
-
-		std::vector<size_t> movingIds = GetConnectedGroup(cursorGridPosition);
+		std::vector<size_t> movingIds = GetConnectedGroup(start);
 		std::vector<bool> isMoving(blocks.size(), false);
 
 		for (auto id : movingIds)
@@ -506,7 +499,7 @@ namespace blockgame
 
 			if (!IsValidGridPosition(destPos))
 			{
-				return;
+				return false;
 			}
 
 			auto destId = GridPositionToId(destPos);
@@ -546,7 +539,6 @@ namespace blockgame
 
 		for (auto id : movingIds)
 		{
-			// UpdateBlock(IdToGridPosition(id), Block::NONE);
 			blocks.at(id) = Block::NONE;
 		}
 
@@ -557,15 +549,32 @@ namespace blockgame
 
 			blocks.at(destId) = originalColors[j];
 			blockRealPositions.at(destId) = originalRealPositions[j];
-			// UpdateBlock(newPos, originalColors[j]);
 		}
 
-		// if (movingIds.size() > 0)
-		//{
-		//	TickTurn();
-		// }
+		return true;
+	}
 
-		cursorGridPosition += dir;
+	void Game::MoveCursor(const glm::ivec2 dir)
+	{
+		TickTurn();
+
+		if (!isDragging)
+		{
+			cursorGridPosition += dir;
+			cursorGridPosition.x = std::clamp(cursorGridPosition.x, 0, GRID_SIZE.x - 1);
+			cursorGridPosition.y = std::clamp(cursorGridPosition.y, 0, GRID_SIZE.y - 1);
+			return;
+		}
+
+		auto target = cursorGridPosition + dir;
+
+		target.x = std::clamp(target.x, 0, GRID_SIZE.x - 1);
+		target.y = std::clamp(target.y, 0, GRID_SIZE.y - 1);
+
+		if (AttemptMoveBlocks(cursorGridPosition, target))
+		{
+			cursorGridPosition = target;
+		}
 	}
 
 	void Game::PlaceBomb()
