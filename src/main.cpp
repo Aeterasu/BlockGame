@@ -55,7 +55,9 @@ namespace
 
 	bool InitGame()
 	{
-		game.Init<blockgame::BlitzMode>();
+		game.Init();
+		game.InitPlayer<blockgame::PlayerCursorControl>();
+		game.InitGameMode<blockgame::BlitzMode>();
 
 		return true;
 	}

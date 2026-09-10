@@ -60,10 +60,77 @@ namespace blockgame
 		time += delta;
 	}
 
-	template <typename GameMode_> void Game::Init()
+	void PlayerCursorControl::Init()
 	{
-		gameMode.emplace<GameMode_>();
+		cursorQuad.size = glm::vec2(26.0f, 26.0f);
+		cursorQuad.ApplyTexture(&textureStorage.cursor);
+		cursorQuad.zIndex = 4096;
+		cursorHandle = renderer.AddQuad(cursorQuad);
+	}
 
+	void PlayerCursorControl::Tick(const double delta, Game& game)
+	{
+		if (input::IsButtonJustPressed(input::Button::BUTTON_2))
+		{
+			game.PlaceBomb();
+		}
+
+		if (input::IsButtonHeld(input::Button::BUTTON_1))
+		{
+			isDragging = true;
+		}
+
+		if (input::IsButtonJustReleased(input::Button::BUTTON_1))
+		{
+			isDragging = false;
+		}
+
+		auto cursorTargetPosition = game.GridPositionToRealPosition(cursorGridPosition);
+		float weight = 1.0f - std::exp(-20.0f * delta);
+		cursorRealPosition.x = lerp(cursorRealPosition.x, cursorTargetPosition.x, weight);
+		cursorRealPosition.y = lerp(cursorRealPosition.y, cursorTargetPosition.y, weight);
+
+		cursorQuad.position = cursorRealPosition;
+		renderer.UpdateQuad(cursorHandle, cursorQuad);
+	}
+
+	void PlayerSokobanControl::Init()
+	{
+	}
+
+	void PlayerSokobanControl::Tick(const double delta, Game& game)
+	{
+	}
+
+	void PlayerSokobanControl::ApplyMovement(const glm::ivec2 dir, Game& game)
+	{
+	}
+
+	void PlayerCursorControl::ApplyMovement(const glm::ivec2 dir, Game& game)
+	{
+		game.TickTurn();
+
+		if (!isDragging)
+		{
+			cursorGridPosition += dir;
+			cursorGridPosition.x = std::clamp(cursorGridPosition.x, 0, Game::GRID_SIZE.x - 1);
+			cursorGridPosition.y = std::clamp(cursorGridPosition.y, 0, Game::GRID_SIZE.y - 1);
+			return;
+		}
+
+		glm::ivec2 stepDir(dir.x != 0 ? (dir.x > 0 ? 1 : -1) : 0, dir.y != 0 ? (dir.y > 0 ? 1 : -1) : 0);
+		int maxSteps = std::max(std::abs(dir.x), std::abs(dir.y));
+
+		int steps = game.AttemptMoveBlocks(cursorGridPosition, stepDir, maxSteps);
+
+		if (steps > 0)
+		{
+			cursorGridPosition += stepDir * steps;
+		}
+	}
+
+	void Game::Init()
+	{
 		Quad grid;
 		grid.size = glm::vec2(270.0f, 270.0f);
 		grid.ApplyTexture(&textureStorage.grid);
@@ -102,11 +169,6 @@ namespace blockgame
 			UpdateBlock(pos, Block::NONE);
 		}
 
-		cursorQuad.size = glm::vec2(26.0f, 26.0f);
-		cursorQuad.ApplyTexture(&textureStorage.cursor);
-		cursorQuad.zIndex = 4096;
-		cursorHandle = renderer.AddQuad(cursorQuad);
-
 		bombQuad.size = glm::vec2(26.0f, 26.0f);
 		bombQuad.ApplyTexture(&textureStorage.bomb);
 		bombQuad.zIndex = 2048;
@@ -127,50 +189,50 @@ namespace blockgame
 			SpawnRandomBlock(true);
 		}
 
-		// init game mode
-
-		std::visit([](auto& mode) { mode.Init(); }, gameMode);
-
-		// finish
-
 		log("Game initialized!");
 	}
-	template void Game::Init<BlitzMode>();
-	template void Game::Init<EndlessMode>();
-	template void Game::Init<SpeedrunMode>();
+
+	template <typename GameMode_> void Game::InitGameMode()
+	{
+		gameMode.emplace<GameMode_>();
+		std::visit([](auto& mode) { mode.Init(); }, gameMode);
+	}
+	template void Game::InitGameMode<BlitzMode>();
+	template void Game::InitGameMode<EndlessMode>();
+	template void Game::InitGameMode<SpeedrunMode>();
+
+	template <typename ControlType_> void Game::InitPlayer()
+	{
+		controlType.emplace<ControlType_>();
+		std::visit([](auto& control) { control.Init(); }, controlType);
+	}
+	template void Game::InitPlayer<PlayerCursorControl>();
+	template void Game::InitPlayer<PlayerSokobanControl>();
 
 	void Game::UpdateInput()
 	{
+		glm::ivec2 dir(0);
+
 		if (input::IsButtonJustPressed(input::Button::UP))
 		{
-			MoveCursor(glm::ivec2(0, -1));
+			dir = glm::ivec2(0, -1);
 		}
 		else if (input::IsButtonJustPressed(input::Button::DOWN))
 		{
-			MoveCursor(glm::ivec2(0, 1));
+			dir = glm::ivec2(0, 1);
 		}
 		else if (input::IsButtonJustPressed(input::Button::LEFT))
 		{
-			MoveCursor(glm::ivec2(-1, 0));
+			dir = glm::ivec2(-1, 0);
 		}
 		else if (input::IsButtonJustPressed(input::Button::RIGHT))
 		{
-			MoveCursor(glm::ivec2(1, 0));
+			dir = glm::ivec2(1, 0);
 		}
 
-		if (input::IsButtonHeld(input::Button::BUTTON_1))
+		if (dir != glm::ivec2(0))
 		{
-			isDragging = true;
-		}
-
-		if (input::IsButtonJustReleased(input::Button::BUTTON_1))
-		{
-			isDragging = false;
-		}
-
-		if (input::IsButtonJustPressed(input::Button::BUTTON_2))
-		{
-			PlaceBomb();
+			std::visit([dir, this](auto& control) { control.ApplyMovement(dir, *this); }, controlType);
 		}
 	}
 
@@ -238,15 +300,9 @@ namespace blockgame
 			}
 		}
 
-		// cursor
+		// controls
 
-		auto cursorTargetPosition = GridPositionToRealPosition(cursorGridPosition);
-		float weight = 1.0f - std::exp(-20.0f * delta);
-		cursorRealPosition.x = lerp(cursorRealPosition.x, cursorTargetPosition.x, weight);
-		cursorRealPosition.y = lerp(cursorRealPosition.y, cursorTargetPosition.y, weight);
-
-		cursorQuad.position = cursorRealPosition;
-		renderer.UpdateQuad(cursorHandle, cursorQuad);
+		std::visit([delta, this](auto& control) { control.Tick(delta, *this); }, controlType);
 
 		// gamemode
 
@@ -569,29 +625,6 @@ namespace blockgame
 		return actualSteps;
 	}
 
-	void Game::MoveCursor(const glm::ivec2 dir)
-	{
-		TickTurn();
-
-		if (!isDragging)
-		{
-			cursorGridPosition += dir;
-			cursorGridPosition.x = std::clamp(cursorGridPosition.x, 0, GRID_SIZE.x - 1);
-			cursorGridPosition.y = std::clamp(cursorGridPosition.y, 0, GRID_SIZE.y - 1);
-			return;
-		}
-
-		glm::ivec2 stepDir(dir.x != 0 ? (dir.x > 0 ? 1 : -1) : 0, dir.y != 0 ? (dir.y > 0 ? 1 : -1) : 0);
-		int maxSteps = std::max(std::abs(dir.x), std::abs(dir.y));
-
-		int steps = AttemptMoveBlocks(cursorGridPosition, stepDir, maxSteps);
-
-		if (steps > 0)
-		{
-			cursorGridPosition += stepDir * steps;
-		}
-	}
-
 	void Game::PlaceBomb()
 	{
 		if (isBombActive)
@@ -599,12 +632,14 @@ namespace blockgame
 			return;
 		}
 
-		if (GetBlockAtPosition(cursorGridPosition) != Block::NONE)
+		auto& cursor = std::get<PlayerCursorControl>(controlType);
+
+		if (GetBlockAtPosition(cursor.cursorGridPosition) != Block::NONE)
 		{
 			return;
 		}
 
-		bombGridPosition = cursorGridPosition;
+		bombGridPosition = cursor.cursorGridPosition;
 		bombTurnsLeft = BOMB_EXPLOSION_TURNS;
 
 		isBombActive = true;

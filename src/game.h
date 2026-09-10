@@ -50,21 +50,35 @@ namespace blockgame
 	// different control types
 	struct PlayerCursorControl
 	{
-		void UpdateMove(glm::ivec2 dir);
+		Quad cursorQuad;
+		QuadHandle cursorHandle;
+
+		glm::ivec2 cursorGridPosition{0, 7};
+		glm::vec2 cursorRealPosition{0.0f, 0.0f};
+		bool isDragging = false;
+
+		void Init();
+		void Tick(const double delta, struct Game& game);
+		void ApplyMovement(const glm::ivec2 dir, struct Game& game);
 	};
 
 	struct PlayerSokobanControl
 	{
-		void UpdateMove(glm::ivec2 dir);
+		void Init();
+		void Tick(const double delta, struct Game& game);
+		void ApplyMovement(const glm::ivec2 dir, struct Game& game);
 	};
 
 	using ControlType = std::variant<PlayerCursorControl, PlayerSokobanControl>;
+
+	struct Game;
 
 	struct Game
 	{
 		static constexpr glm::ivec2 GRID_SIZE = glm::ivec2{8, 8};
 
 		GameMode gameMode;
+		ControlType controlType;
 
 		bool isGameOver = false;
 
@@ -86,11 +100,6 @@ namespace blockgame
 
 		std::array<QuadHandle, 64> blockWarningHandles;
 
-		glm::ivec2 cursorGridPosition{0, GRID_SIZE.y - 1};
-		glm::vec2 cursorRealPosition{0.0f, 0.0f};
-
-		bool isDragging = false;
-
 		glm::ivec2 bombGridPosition{0, 0};
 		bool isBombActive = false;
 		int32_t bombTurnsLeft = 0;
@@ -106,9 +115,6 @@ namespace blockgame
 
 		QuadHandle gridHandle;
 
-		Quad cursorQuad;
-		QuadHandle cursorHandle;
-
 		Quad bombQuad;
 		QuadHandle bombHandle;
 
@@ -117,7 +123,11 @@ namespace blockgame
 		Scoring scoring;
 		Label scoreLabel;
 
-		template <typename GameMode_> void Init();
+		void Init();
+
+		template <typename GameMode_> void InitGameMode();
+
+		template <typename ControlType_> void InitPlayer();
 
 		void Tick(const double delta);
 		void UpdateInput();
@@ -139,7 +149,6 @@ namespace blockgame
 
 		std::vector<size_t> GetConnectedGroup(const glm::ivec2 startPos);
 		int AttemptMoveBlocks(const glm::ivec2 start, const glm::ivec2 stepDir, const int maxSteps);
-		void MoveCursor(const glm::ivec2 dir);
 
 		void PlaceBomb();
 		void ExplodeBomb();
