@@ -138,7 +138,7 @@ namespace blockgame
 		glm::vec4 GetBlockTint(const Block block);
 
 		std::vector<size_t> GetConnectedGroup(const glm::ivec2 startPos);
-		bool AttemptMoveBlocks(const glm::ivec2 start, const glm::ivec2 target);
+		int AttemptMoveBlocks(const glm::ivec2 start, const glm::ivec2 stepDir, const int maxSteps);
 		void MoveCursor(const glm::ivec2 dir);
 
 		void PlaceBomb();

@@ -471,87 +471,102 @@ namespace blockgame
 		return group;
 	}
 
-	bool Game::AttemptMoveBlocks(const glm::ivec2 start, const glm::ivec2 target)
+	int Game::AttemptMoveBlocks(const glm::ivec2 start, const glm::ivec2 stepDir, const int maxSteps)
 	{
 		auto startBlock = GetBlockAtPosition(start);
 
 		if (startBlock == Block::NONE)
 		{
-			return false;
+			return 0;
 		}
-
-		auto dir = target - start;
 
 		std::vector<size_t> movingIds = GetConnectedGroup(start);
-		std::vector<bool> isMoving(blocks.size(), false);
 
+		std::unordered_map<size_t, glm::vec2> realPositions;
+		realPositions.reserve(movingIds.size());
 		for (auto id : movingIds)
 		{
-			isMoving[id] = true;
+			realPositions[id] = blockRealPositions.at(id);
 		}
 
-		size_t i = 0;
-		while (i < movingIds.size())
+		int actualSteps = 0;
+
+		for (int step = 0; step < maxSteps; step++)
 		{
-			glm::ivec2 pos = IdToGridPosition(movingIds[i]);
-			glm::ivec2 destPos = pos + dir;
-			i++;
-
-			if (!IsValidGridPosition(destPos))
+			std::vector<bool> isMoving(blocks.size(), false);
+			for (auto id : movingIds)
 			{
-				return false;
+				isMoving[id] = true;
 			}
 
-			auto destId = GridPositionToId(destPos);
-
-			if (isMoving[destId])
+			bool blocked = false;
+			bool changed = true;
+			while (changed && !blocked)
 			{
-				continue;
-			}
+				changed = false;
 
-			if (blocks.at(destId) == Block::NONE)
-			{
-				continue;
-			}
-
-			auto pushedGroup = GetConnectedGroup(destPos);
-
-			for (auto pushedId : pushedGroup)
-			{
-				if (!isMoving[pushedId])
+				for (size_t idx = 0; idx < movingIds.size(); idx++)
 				{
-					isMoving[pushedId] = true;
-					movingIds.push_back(pushedId);
+					size_t id = movingIds[idx];
+					glm::ivec2 pos = IdToGridPosition(id);
+					glm::ivec2 nextPos = pos + stepDir;
+
+					if (!IsValidGridPosition(nextPos))
+					{
+						blocked = true;
+						break;
+					}
+
+					auto nextId = GridPositionToId(nextPos);
+
+					if (isMoving[nextId] || blocks.at(nextId) == Block::NONE)
+					{
+						continue;
+					}
+
+					auto pushedGroup = GetConnectedGroup(nextPos);
+					for (auto pushedId : pushedGroup)
+					{
+						if (!isMoving[pushedId])
+						{
+							isMoving[pushedId] = true;
+							movingIds.push_back(pushedId);
+							realPositions[pushedId] = blockRealPositions.at(pushedId);
+							changed = true;
+						}
+					}
 				}
 			}
+
+			if (blocked)
+			{
+				break;
+			}
+
+			std::vector<std::pair<size_t, Block>> movedBlocks;
+			movedBlocks.reserve(movingIds.size());
+			for (auto id : movingIds)
+			{
+				movedBlocks.emplace_back(id, blocks.at(id));
+			}
+
+			for (auto id : movingIds)
+			{
+				blocks.at(id) = Block::NONE;
+			}
+
+			for (auto& [id, block] : movedBlocks)
+			{
+				glm::ivec2 newPos = IdToGridPosition(id) + stepDir;
+				auto newId = GridPositionToId(newPos);
+				blocks.at(newId) = block;
+				blockRealPositions.at(newId) = realPositions[id];
+			}
+
+			actualSteps++;
 		}
 
-		std::vector<Block> originalColors;
-		std::vector<glm::vec2> originalRealPositions;
-		originalColors.reserve(movingIds.size());
-		originalRealPositions.reserve(movingIds.size());
-
-		for (auto id : movingIds)
-		{
-			originalColors.push_back(blocks.at(id));
-			originalRealPositions.push_back(blockRealPositions.at(id));
-		}
-
-		for (auto id : movingIds)
-		{
-			blocks.at(id) = Block::NONE;
-		}
-
-		for (size_t j = 0; j < movingIds.size(); j++)
-		{
-			glm::ivec2 newPos = IdToGridPosition(movingIds[j]) + dir;
-			auto destId = GridPositionToId(newPos);
-
-			blocks.at(destId) = originalColors[j];
-			blockRealPositions.at(destId) = originalRealPositions[j];
-		}
-
-		return true;
+		return actualSteps;
 	}
 
 	void Game::MoveCursor(const glm::ivec2 dir)
@@ -566,14 +581,14 @@ namespace blockgame
 			return;
 		}
 
-		auto target = cursorGridPosition + dir;
+		glm::ivec2 stepDir(dir.x != 0 ? (dir.x > 0 ? 1 : -1) : 0, dir.y != 0 ? (dir.y > 0 ? 1 : -1) : 0);
+		int maxSteps = std::max(std::abs(dir.x), std::abs(dir.y));
 
-		target.x = std::clamp(target.x, 0, GRID_SIZE.x - 1);
-		target.y = std::clamp(target.y, 0, GRID_SIZE.y - 1);
+		int steps = AttemptMoveBlocks(cursorGridPosition, stepDir, maxSteps);
 
-		if (AttemptMoveBlocks(cursorGridPosition, target))
+		if (steps > 0)
 		{
-			cursorGridPosition = target;
+			cursorGridPosition += stepDir * steps;
 		}
 	}
 
