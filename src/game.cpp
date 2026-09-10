@@ -10,12 +10,56 @@
 #include "rng.h"
 #include "shader_storage.h"
 #include "texture_storage.h"
+#include "utils.h"
 
 #include <SDL2/SDL.h>
 #include <unordered_map>
 
 namespace blockgame
 {
+	void BlitzMode::Init()
+	{
+		timeLeft = TIME;
+
+		timeLabel.Create(fontStorage.superstar, "TIME: 00:00", ColorToSDLColor(blockgame::PICO_DARK_BLUE),
+						 glm::vec2(165.0f, 24.0f), 999999);
+	}
+
+	void BlitzMode::Tick(const double delta)
+	{
+		if (isTimeUp)
+		{
+			return;
+		}
+
+		timeLeft = std::max(timeLeft - delta, 0.0);
+		timeLabel.SetText("TIME: " + DoubleToString(timeLeft, 1));
+
+		if (timeLeft <= 0.0)
+		{
+			isTimeUp = true;
+		}
+	}
+
+	void EndlessMode::Init()
+	{
+	}
+
+	void EndlessMode::Tick(const double delta)
+	{
+	}
+
+	void SpeedrunMode::Init()
+	{
+		currentClears = 0;
+		time = 0.0;
+	}
+
+	void SpeedrunMode::Tick(const double delta)
+	{
+		time += delta;
+	}
+
 	template <typename GameMode_> void Game::Init()
 	{
 		gameMode.emplace<GameMode_>();
@@ -83,34 +127,33 @@ namespace blockgame
 			SpawnRandomBlock(true);
 		}
 
+		// init game mode
+
+		std::visit([](auto& mode) { mode.Init(); }, gameMode);
+
+		// finish
+
 		log("Game initialized!");
 	}
 	template void Game::Init<BlitzMode>();
 	template void Game::Init<EndlessMode>();
 	template void Game::Init<SpeedrunMode>();
 
-	void Game::Tick(const double delta)
+	void Game::UpdateInput()
 	{
-		if (isGameOver)
-		{
-			return;
-		}
-
-		// input
-
 		if (input::IsButtonJustPressed(input::Button::UP))
 		{
 			MoveCursor(glm::ivec2(0, -1));
 		}
-		if (input::IsButtonJustPressed(input::Button::DOWN))
+		else if (input::IsButtonJustPressed(input::Button::DOWN))
 		{
 			MoveCursor(glm::ivec2(0, 1));
 		}
-		if (input::IsButtonJustPressed(input::Button::LEFT))
+		else if (input::IsButtonJustPressed(input::Button::LEFT))
 		{
 			MoveCursor(glm::ivec2(-1, 0));
 		}
-		if (input::IsButtonJustPressed(input::Button::RIGHT))
+		else if (input::IsButtonJustPressed(input::Button::RIGHT))
 		{
 			MoveCursor(glm::ivec2(1, 0));
 		}
@@ -119,6 +162,7 @@ namespace blockgame
 		{
 			isDragging = true;
 		}
+
 		if (input::IsButtonJustReleased(input::Button::BUTTON_1))
 		{
 			isDragging = false;
@@ -128,6 +172,26 @@ namespace blockgame
 		{
 			PlaceBomb();
 		}
+	}
+
+	void Game::Tick(const double delta)
+	{
+		if (isGameOver)
+		{
+			return;
+		}
+
+		if (auto* blitzModePtr = std::get_if<BlitzMode>(&gameMode))
+		{
+			if (blitzModePtr->isTimeUp)
+			{
+				return;
+			}
+		}
+
+		// input
+
+		UpdateInput();
 
 		// blocks sliding
 
@@ -183,6 +247,10 @@ namespace blockgame
 
 		cursorQuad.position = cursorRealPosition;
 		renderer.UpdateQuad(cursorHandle, cursorQuad);
+
+		// gamemode
+
+		std::visit([delta](auto& mode) { mode.Tick(delta); }, gameMode);
 
 		// score
 

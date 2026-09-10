@@ -19,20 +19,30 @@ namespace blockgame
 		const double TIME = 180.0;
 		double timeLeft = 180.0;
 
-		void Tick(double delta);
+		bool isTimeUp = false;
+
+		Label timeLabel;
+
+		void Init();
+		void Tick(const double delta);
 	};
 
 	// endless fun
 	struct EndlessMode
 	{
+		void Init();
+		void Tick(const double delta);
 	};
 
-	// difficulty is high, clear 400 blocks as fast as possible
+	// difficulty is high, clear a target count of blocks as fast as possible
 	struct SpeedrunMode
 	{
 		const uint64_t TARGET_CLEARS = 500;
 		uint64_t currentClears = 0;
 		double time = 0.0;
+
+		void Init();
+		void Tick(const double delta);
 	};
 
 	using GameMode = std::variant<BlitzMode, EndlessMode, SpeedrunMode>;
@@ -97,6 +107,7 @@ namespace blockgame
 		template <typename GameMode_> void Init();
 
 		void Tick(const double delta);
+		void UpdateInput();
 		void TickTurn();
 		void UpdateBlock(const glm::ivec2 gridPosition, const Block newState);
 		void SpawnRandomBlock(const bool instant = false);
