@@ -41,8 +41,12 @@ target_link_libraries(game PRIVATE glad)
 
 if(EMSCRIPTEN)
     target_compile_options(game PRIVATE --use-port=sdl3)
-    target_link_options(game PRIVATE --use-port=sdl3)
-    set_target_properties(game PROPERTIES SUFFIX ".html")
+    target_link_options(game PRIVATE 
+        --use-port=sdl3
+        --shell-file=${CMAKE_SOURCE_DIR}/index.html
+    )
+    set_target_properties(game PROPERTIES OUTPUT_NAME "index" SUFFIX ".html")
+    set_property(TARGET game APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/index.html")
 else()
     target_link_libraries(game PRIVATE SDL3::SDL3)
 endif()

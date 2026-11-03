@@ -1,7 +1,3 @@
-#include "SDL3/SDL_events.h"
-#include "SDL3/SDL_init.h"
-#include "SDL3/SDL_properties.h"
-#include "SDL3/SDL_video.h"
 #include <stdio.h>
 
 #include <SDL3/SDL.h>
@@ -9,9 +5,33 @@
 
 #include <glad/gles2.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 SDL_Window* window = NULL;
 SDL_GLContext gl_context = NULL;
 bool is_running = true;
+
+static void tick(void)
+{
+	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	SDL_GL_SwapWindow(window);
+
+	SDL_Event event;
+	while (SDL_PollEvent(&event))
+	{
+		if (event.type == SDL_EVENT_QUIT)
+		{
+			is_running = false;
+#ifdef __EMSCRIPTEN__
+			emscripten_cancel_main_loop();
+#endif
+		}
+	}
+}
 
 int main(int argc, char* argv[])
 {
@@ -42,26 +62,18 @@ int main(int argc, char* argv[])
 
 	gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress);
 
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop(tick, 0, 1);
+#else
 	while (is_running)
 	{
-		SDL_Event event;
-		while (SDL_PollEvent(&event))
-		{
-			if (event.type == SDL_EVENT_QUIT)
-			{
-				is_running = false;
-			}
-		}
-
-		glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		SDL_GL_SwapWindow(window);
+		tick();
 	}
 
 	SDL_GL_DestroyContext(gl_context);
 	SDL_DestroyWindow(window);
 	SDL_Quit();
+#endif
 
 	return 0;
 }
