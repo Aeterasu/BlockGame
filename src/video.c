@@ -2,8 +2,37 @@
 
 #include "file.h"
 
-SDL_Window* window = NULL;
-SDL_GLContext gl_context = NULL;
+static SDL_Window* window = NULL;
+static SDL_GLContext gl_context = NULL;
+
+// clang-format off
+static GLfloat quad_vertices[] = 
+{
+	// position, uv data
+	// x, y, z, u, v
+	-0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
+	0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
+	0.5f, 0.5f, 0.0f, 0.0f, 0.0f,
+	-0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+};
+
+static GLuint quad_indices[] =
+{
+	0, 1, 2,
+	2, 3, 0
+};
+
+static const GLuint PER_VERTEX_DATA_COUNT = 5;
+// clang-format on
+
+static GLuint vao = 0;
+static GLuint vbo = 0;
+static GLuint ebo = 0;
+
+static GLuint texture_atlas_sampler_id = 0;
+
+static GLuint shader_program = 0;
+static GLint texture_atlas_uniform = 0;
 
 void video_init(void)
 {
@@ -36,19 +65,15 @@ void video_init(void)
 
 	glViewport(0, 0, 270, 270);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	// test quad
 
-	GLuint shader_program = video_load_shader_program("asset/shader/2d.vert", "asset/shader/default.frag");
+	shader_program = video_load_shader_program("asset/shader/2d.vert", "asset/shader/default.frag");
 	glUseProgram(shader_program);
 
-	GLfloat quad_vertices[] = {
-		-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.5f, 0.5f, 0.0f, -0.5f, 0.5f, 0.0f,
-	};
-
-	GLuint quad_indices[] = {0, 1, 2, 2, 3, 0};
-	GLuint vao;
-	GLuint vbo;
-	GLuint ebo;
+	texture_atlas_uniform = glGetUniformLocation(shader_program, "u_texture");
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -62,8 +87,35 @@ void video_init(void)
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quad_indices), quad_indices, GL_DYNAMIC_DRAW);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (const void*)0);
+	GLsizei stride = PER_VERTEX_DATA_COUNT * sizeof(GLfloat);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void*)0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (const void*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+}
+
+void video_upload_texture_atlas(const char* path)
+{
+	SDL_Surface* loaded_surface = IMG_Load(path);
+	SDL_Surface* texture_atlas_surface = SDL_ConvertSurface(loaded_surface, SDL_PIXELFORMAT_RGBA32);
+	SDL_DestroySurface(loaded_surface);
+
+	glGenTextures(1, &texture_atlas_sampler_id);
+	glBindTexture(GL_TEXTURE_2D, texture_atlas_sampler_id);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture_atlas_surface->w, texture_atlas_surface->h, 0, GL_RGBA,
+				 GL_UNSIGNED_BYTE, texture_atlas_surface->pixels);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	glBindTexture(GL_TEXTURE_2D, texture_atlas_sampler_id);
+
+	SDL_DestroySurface(texture_atlas_surface);
 }
 
 void video_deinit(void)
@@ -82,6 +134,13 @@ void video_clear_frame(void)
 
 void video_render_frame(void)
 {
+	glUseProgram(shader_program);
+	glBindVertexArray(vao);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture_atlas_sampler_id);
+	glUniform1i(texture_atlas_uniform, 0);
+
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
 	SDL_GL_SwapWindow(window);

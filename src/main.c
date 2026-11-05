@@ -36,6 +36,7 @@ static void tick(void)
 int main(int argc, char* argv[])
 {
 	video_init();
+	video_upload_texture_atlas("asset/texture/texture_1.png");
 
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop(tick, 0, 1);
