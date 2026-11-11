@@ -1,6 +1,6 @@
 #include "video.h"
-
 #include "file.h"
+#include "vector.h"
 
 static SDL_Window* window = NULL;
 static SDL_GLContext gl_context = NULL;
@@ -33,6 +33,9 @@ static GLuint texture_atlas_sampler_id = 0;
 
 static GLuint shader_program = 0;
 static GLint texture_atlas_uniform = 0;
+
+static GLint projection_uniform = -1;
+static GLint model_uniform = -1;
 
 void video_init(void)
 {
@@ -74,6 +77,9 @@ void video_init(void)
 	glUseProgram(shader_program);
 
 	texture_atlas_uniform = glGetUniformLocation(shader_program, "u_texture");
+
+	projection_uniform = glGetUniformLocation(shader_program, "u_projection");
+	model_uniform = glGetUniformLocation(shader_program, "u_model");
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -134,12 +140,17 @@ void video_clear_frame(void)
 
 void video_render_frame(void)
 {
+	Mat3f projection = mat3f_orthographic(0.0, 270.0f, 270.0f, 0.0f);
+	Transform2D transform = {.position = {64.0f, 135.0f}, .scale = {64.0f, 64.0f}, .rotation = 3.14f / 2.0f};
+
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, texture_atlas_sampler_id);
 	glUniform1i(texture_atlas_uniform, 0);
+	glUniformMatrix3fv(projection_uniform, 1, GL_FALSE, projection.m);
+	glUniformMatrix3fv(model_uniform, 1, GL_FALSE, mat3f_get_from_transform_2d(transform).m);
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 
