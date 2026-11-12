@@ -12,6 +12,12 @@ typedef struct
 
 typedef struct
 {
+	Vec2f size;
+	Vec2f position;
+} Rect2f;
+
+typedef struct
+{
 	Vec2f position;
 	Vec2f scale;
 	float rotation;

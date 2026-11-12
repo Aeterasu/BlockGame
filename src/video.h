@@ -12,6 +12,7 @@
 typedef struct
 {
 	Transform2D transform;
+	Rect2f texture_atlas_rect;
 } DrawableItem2D;
 
 void video_init(void);

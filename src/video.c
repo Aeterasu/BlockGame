@@ -37,6 +37,10 @@ static GLint texture_atlas_uniform = 0;
 static GLint projection_uniform = -1;
 static GLint model_uniform = -1;
 
+static GLint atlas_size_uniform = -1;
+static GLint texture_offset_uniform = -1;
+static GLint sprite_size_uniform = -1;
+
 static DrawableItem2D drawables[MAX_DRAWABLE_ITEM_COUNT];
 static uint16_t active_drawables = 0;
 
@@ -83,6 +87,10 @@ void video_init(void)
 
 	projection_uniform = glGetUniformLocation(shader_program, "u_projection");
 	model_uniform = glGetUniformLocation(shader_program, "u_model");
+
+	atlas_size_uniform = glGetUniformLocation(shader_program, "u_atlas_size");
+	texture_offset_uniform = glGetUniformLocation(shader_program, "u_texture_offset");
+	sprite_size_uniform = glGetUniformLocation(shader_program, "u_sprite_size");
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -151,9 +159,13 @@ void video_render_frame(void)
 	Transform2D t2 = {.position = {200.0f, 90.0f}, .scale = {65.0f, 65.0f}, .rotation = 4.345345f};
 	Transform2D t3 = {.position = {150.0f, 190.0f}, .scale = {16.0f, 16.0f}, .rotation = 0.145345f};
 
-	video_draw_item((DrawableItem2D){t1});
-	video_draw_item((DrawableItem2D){t2});
-	video_draw_item((DrawableItem2D){t3});
+	Rect2f r1 = {.size = {18.0f, 18.0f}, .position = {0.0f, 0.0f}};
+	Rect2f r2 = {.size = {18.0f, 18.0f}, .position = {18.0f, 18.0f}};
+	Rect2f r3 = {.size = {18.0f, 18.0f}, .position = {18.0f, 0.0f}};
+
+	video_draw_item((DrawableItem2D){t1, r1});
+	video_draw_item((DrawableItem2D){t2, r2});
+	video_draw_item((DrawableItem2D){t3, r3});
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
@@ -167,6 +179,13 @@ void video_render_frame(void)
 	for (uint16_t i = 0; i < active_drawables; i++)
 	{
 		glUniformMatrix3fv(model_uniform, 1, GL_FALSE, mat3f_get_from_transform_2d(drawables[i].transform).m);
+		glUniform2f(atlas_size_uniform, 36.0f, 36.0f);
+
+		Vec2f offset = drawables[i].texture_atlas_rect.position;
+		Vec2f size = drawables[i].texture_atlas_rect.size;
+
+		glUniform2f(texture_offset_uniform, offset.x, offset.y);
+		glUniform2f(sprite_size_uniform, size.x, size.y);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 	}
 
