@@ -3,6 +3,11 @@ build/
 build-web/
 material/
 
+# Krita
+*~
+*.kra~
+*.autosave
+
 # Template gitignore
 # https://github.com/github/gitignore/blob/main/C.gitignore
 # Prerequisites
