@@ -13,6 +13,7 @@ void main()
 {
 	v_uv = a_uv;
 
-	gl_Position = vec4(u_projection * u_model * a_position, 1.0);
+	vec3 pos = u_projection * (u_model * vec3(a_position.xy, 1.0));
+	gl_Position = vec4(pos.xy, 0.0, 1.0);
 	v_color = vec4(v_uv.y, 0.0f, v_uv.x, 1.0f);
 }

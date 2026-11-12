@@ -37,6 +37,9 @@ static GLint texture_atlas_uniform = 0;
 static GLint projection_uniform = -1;
 static GLint model_uniform = -1;
 
+static DrawableItem2D drawables[MAX_DRAWABLE_ITEM_COUNT];
+static uint16_t active_drawables = 0;
+
 void video_init(void)
 {
 	SDL_InitSubSystem(SDL_INIT_VIDEO);
@@ -136,23 +139,36 @@ void video_clear_frame(void)
 {
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	active_drawables = 0;
 }
 
 void video_render_frame(void)
 {
 	Mat3f projection = mat3f_orthographic(0.0, 270.0f, 270.0f, 0.0f);
-	Transform2D transform = {.position = {64.0f, 135.0f}, .scale = {64.0f, 64.0f}, .rotation = 3.14f / 2.0f};
+
+	Transform2D t1 = {.position = {40.0f, 150.0f}, .scale = {26.0f, 26.0f}, .rotation = 0.5345f};
+	Transform2D t2 = {.position = {200.0f, 90.0f}, .scale = {65.0f, 65.0f}, .rotation = 4.345345f};
+	Transform2D t3 = {.position = {150.0f, 190.0f}, .scale = {16.0f, 16.0f}, .rotation = 0.145345f};
+
+	video_draw_item((DrawableItem2D){t1});
+	video_draw_item((DrawableItem2D){t2});
+	video_draw_item((DrawableItem2D){t3});
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
 	glActiveTexture(GL_TEXTURE0);
+	// TODO: dont rebind shit every frame
 	glBindTexture(GL_TEXTURE_2D, texture_atlas_sampler_id);
 	glUniform1i(texture_atlas_uniform, 0);
 	glUniformMatrix3fv(projection_uniform, 1, GL_FALSE, projection.m);
-	glUniformMatrix3fv(model_uniform, 1, GL_FALSE, mat3f_get_from_transform_2d(transform).m);
 
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+	for (uint16_t i = 0; i < active_drawables; i++)
+	{
+		glUniformMatrix3fv(model_uniform, 1, GL_FALSE, mat3f_get_from_transform_2d(drawables[i].transform).m);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
+	}
 
 	SDL_GL_SwapWindow(window);
 }
@@ -245,4 +261,16 @@ GLuint video_load_shader_program(const char* vertex_path, const char* fragment_p
 	}
 
 	return program;
+}
+
+void video_draw_item(const DrawableItem2D item)
+{
+	if (active_drawables >= MAX_DRAWABLE_ITEM_COUNT)
+	{
+		return;
+	}
+
+	drawables[active_drawables] = item;
+
+	active_drawables++;
 }

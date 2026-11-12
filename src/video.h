@@ -5,6 +5,15 @@
 
 #include <glad/gles2.h>
 
+#include "vector.h"
+
+#define MAX_DRAWABLE_ITEM_COUNT 4096u
+
+typedef struct
+{
+	Transform2D transform;
+} DrawableItem2D;
+
 void video_init(void);
 void video_deinit(void);
 
@@ -15,3 +24,5 @@ GLuint video_compile_shader(const char* path, const GLenum type);
 GLuint video_load_shader_program(const char* vertex_path, const char* fragment_path);
 
 void video_upload_texture_atlas(const char* path);
+
+void video_draw_item(DrawableItem2D item);
