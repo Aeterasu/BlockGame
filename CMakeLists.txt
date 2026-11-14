@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.24)
 project(game LANGUAGES C)
 
+set(GAME_NAME "BlockGame" CACHE STRING "Game name")
+
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -64,6 +66,7 @@ file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS src/*.c)
 add_executable(game ${GAME_SOURCES})
 
 target_include_directories(game PRIVATE src)
+target_compile_definitions(game PRIVATE GAME_NAME="${GAME_NAME}")
 target_compile_options(game PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(game PRIVATE glad SDL3::SDL3 SDL3_image::SDL3_image)
 

@@ -6,12 +6,18 @@
 
 #include <SDL3/SDL_main.h>
 
+#include "log.h"
 #include "video.h"
+
+#ifndef GAME_NAME
+#define GAME_NAME "Game"
+#endif
 
 bool is_running = true;
 
 static void teardown(void)
 {
+	log_info("ENGINE TEARDOWN...");
 	video_deinit();
 }
 
@@ -35,6 +41,8 @@ static void tick(void)
 
 int main(int argc, char* argv[])
 {
+	log_info("LAUNCHING %s...", GAME_NAME);
+
 	video_init();
 	video_upload_texture_atlas("asset/texture/texture_1.png");
 

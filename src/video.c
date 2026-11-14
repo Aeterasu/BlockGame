@@ -1,5 +1,6 @@
 #include "video.h"
 #include "file.h"
+#include "log.h"
 #include "vector.h"
 
 static SDL_Window* window = NULL;
@@ -43,10 +44,14 @@ static GLint sprite_size_uniform = -1;
 
 static DrawableItem2D drawables[MAX_DRAWABLE_ITEM_COUNT];
 static uint16_t active_drawables = 0;
+static int drawable_limit_warned = 0;
 
 void video_init(void)
 {
-	SDL_InitSubSystem(SDL_INIT_VIDEO);
+	if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
+	{
+		log_error("Failed to initialize SDL video: %s", SDL_GetError());
+	}
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -67,11 +72,25 @@ void video_init(void)
 
 	SDL_DestroyProperties(window_properties);
 
+	if (!window)
+	{
+		log_error("Failed to create window: %s", SDL_GetError());
+	}
+
 	gl_context = SDL_GL_CreateContext(window);
+
+	if (!gl_context)
+	{
+		log_error("Failed to create GL context: %s", SDL_GetError());
+	}
+
 	SDL_GL_MakeCurrent(window, gl_context);
 	SDL_GL_SetSwapInterval(1);
 
-	gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress);
+	if (!gladLoadGLES2((GLADloadfunc)SDL_GL_GetProcAddress))
+	{
+		log_error("Failed to load GLES2 functions");
+	}
 
 	glViewport(0, 0, 270, 270);
 
@@ -109,12 +128,34 @@ void video_init(void)
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, stride, (const void*)(3 * sizeof(GLfloat)));
 	glEnableVertexAttribArray(0);
 	glEnableVertexAttribArray(1);
+
+	const char* vendor = (const char*)glGetString(GL_VENDOR);
+	const char* renderer = (const char*)glGetString(GL_RENDERER);
+	const char* version = (const char*)glGetString(GL_VERSION);
+
+	log_info("VIDEO INITIALIZED: vendor=%s renderer=%s version=%s", vendor ? vendor : "unknown",
+			 renderer ? renderer : "unknown", version ? version : "unknown");
 }
 
 void video_upload_texture_atlas(const char* path)
 {
 	SDL_Surface* loaded_surface = IMG_Load(path);
+
+	if (!loaded_surface)
+	{
+		log_error("Failed to load texture atlas: %s (%s)", path, SDL_GetError());
+		return;
+	}
+
 	SDL_Surface* texture_atlas_surface = SDL_ConvertSurface(loaded_surface, SDL_PIXELFORMAT_RGBA32);
+
+	if (!texture_atlas_surface)
+	{
+		log_error("Failed to convert texture atlas: %s", SDL_GetError());
+		SDL_DestroySurface(loaded_surface);
+		return;
+	}
+
 	SDL_DestroySurface(loaded_surface);
 
 	glGenTextures(1, &texture_atlas_sampler_id);
@@ -198,6 +239,7 @@ GLuint video_compile_shader(const char* path, const GLenum type)
 
 	if (!source)
 	{
+		log_error("Failed to read shader: %s", path);
 		return 0;
 	}
 
@@ -220,7 +262,7 @@ GLuint video_compile_shader(const char* path, const GLenum type)
 		{
 			glGetShaderInfoLog(shader, log_length, NULL, log);
 			log[log_length] = '\0';
-			fprintf(stderr, "Shader compilation failed (%s):\n%s\n", path, log);
+			log_error("Shader compilation failed (%s): %s", path, log);
 			free(log);
 		}
 
@@ -271,7 +313,7 @@ GLuint video_load_shader_program(const char* vertex_path, const char* fragment_p
 		{
 			glGetProgramInfoLog(program, log_length, NULL, log);
 			log[log_length] = '\0';
-			fprintf(stderr, "Shader linking failed:\n%s\n", log);
+			log_error("Shader linking failed: %s", log);
 			free(log);
 		}
 
@@ -286,6 +328,12 @@ void video_draw_item(const DrawableItem2D item)
 {
 	if (active_drawables >= MAX_DRAWABLE_ITEM_COUNT)
 	{
+		if (!drawable_limit_warned)
+		{
+			log_warning("Drawable limit exceeded (%u)", MAX_DRAWABLE_ITEM_COUNT);
+			drawable_limit_warned = 1;
+		}
+
 		return;
 	}
 

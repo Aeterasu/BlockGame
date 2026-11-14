@@ -21,7 +21,6 @@ char* read_file(const char* path)
 
 	if (!file)
 	{
-		fprintf(stderr, "Failed to read file: %s\n", path);
 		return NULL;
 	}
 

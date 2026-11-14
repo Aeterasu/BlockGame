@@ -4,9 +4,12 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <SDL3/SDL_filesystem.h>
+
 #include "file.h"
 
-#define LOG_FILE_PATH "debug.log"
+#define LOG_FILE_NAME "debug.log"
+#define LOG_PATH_SIZE 1024
 #define LOG_MESSAGE_SIZE 1024
 
 static FILE* log_file = NULL;
@@ -20,11 +23,24 @@ static FILE* log_get_file(void)
 	}
 
 	log_file_checked = 1;
-	log_file = open_file(LOG_FILE_PATH, "a");
+
+	const char* base_path = SDL_GetBasePath();
+	char log_path[LOG_PATH_SIZE];
+
+	if (base_path)
+	{
+		snprintf(log_path, sizeof(log_path), "%s%s", base_path, LOG_FILE_NAME);
+	}
+	else
+	{
+		snprintf(log_path, sizeof(log_path), "%s", LOG_FILE_NAME);
+	}
+
+	log_file = open_file(log_path, "w");
 
 	if (!log_file)
 	{
-		fprintf(stderr, "Failed to open log file: %s\n", LOG_FILE_PATH);
+		fprintf(stderr, "Failed to open log file: %s\n", log_path);
 	}
 
 	return log_file;
