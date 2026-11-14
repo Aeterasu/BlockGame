@@ -1,8 +1,23 @@
 #include "file.h"
 
+FILE* open_file(const char* path, const char* mode)
+{
+	return fopen(path, mode);
+}
+
+void write_file(FILE* file, const char* text)
+{
+	if (!file)
+	{
+		return;
+	}
+
+	fputs(text, file);
+}
+
 char* read_file(const char* path)
 {
-	FILE* file = fopen(path, "rb");
+	FILE* file = open_file(path, "rb");
 
 	if (!file)
 	{
