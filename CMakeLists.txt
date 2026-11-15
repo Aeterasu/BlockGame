@@ -79,4 +79,12 @@ if(EMSCRIPTEN)
 	)
 	set_target_properties(game PROPERTIES OUTPUT_NAME "index" SUFFIX ".html")
 	set_property(TARGET game APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/index.html")
+else()
+	add_custom_target(copy_assets ALL
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+			"${CMAKE_SOURCE_DIR}/asset"
+			"$<TARGET_FILE_DIR:game>/asset"
+		VERBATIM
+	)
+	add_dependencies(copy_assets game)
 endif()
