@@ -26,12 +26,17 @@ static void tick(void)
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
 	{
-		if (event.type == SDL_EVENT_QUIT)
+		switch (event.type)
 		{
-			is_running = false;
+			case SDL_EVENT_QUIT:
+				is_running = false;
 #ifdef __EMSCRIPTEN__
-			emscripten_cancel_main_loop();
+				emscripten_cancel_main_loop();
 #endif
+				break;
+			case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+				video_resize_viewport();
+				break;
 		}
 	}
 

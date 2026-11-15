@@ -9,6 +9,9 @@
 
 #define MAX_DRAWABLE_ITEM_COUNT 4096u
 
+#define DEFAULT_WINDOW_WIDTH 270u
+#define DEFAULT_WINDOW_HEIGHT 270u
+
 typedef struct
 {
 	Transform2D transform;
@@ -17,6 +20,8 @@ typedef struct
 
 void video_init(void);
 void video_deinit(void);
+
+void video_resize_viewport(void);
 
 void video_clear_frame(void);
 void video_render_frame(void);

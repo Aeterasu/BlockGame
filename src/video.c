@@ -61,8 +61,8 @@ void video_init(void)
 
 	SDL_SetStringProperty(window_properties, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Game");
 	SDL_SetBooleanProperty(window_properties, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
-	SDL_SetNumberProperty(window_properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 270);
-	SDL_SetNumberProperty(window_properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 270);
+	SDL_SetNumberProperty(window_properties, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, DEFAULT_WINDOW_WIDTH);
+	SDL_SetNumberProperty(window_properties, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, DEFAULT_WINDOW_HEIGHT);
 	SDL_SetNumberProperty(window_properties, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED);
 	SDL_SetNumberProperty(window_properties, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_CENTERED);
 
@@ -92,7 +92,7 @@ void video_init(void)
 		log_error("Failed to load GLES2 functions");
 	}
 
-	glViewport(0, 0, 270, 270);
+	video_resize_viewport();
 
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -182,6 +182,15 @@ void video_deinit(void)
 	SDL_DestroyWindow(window);
 
 	SDL_QuitSubSystem(SDL_INIT_VIDEO);
+}
+
+void video_resize_viewport(void)
+{
+	int32_t width = 0;
+	int32_t height = 0;
+
+	SDL_GetWindowSizeInPixels(window, &width, &height);
+	glViewport(0, 0, width, height);
 }
 
 void video_clear_frame(void)
