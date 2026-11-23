@@ -5,6 +5,7 @@
 
 #include <glad/gles2.h>
 
+#include "color.h"
 #include "vector.h"
 
 #define MAX_DRAWABLE_ITEM_COUNT 4096u
@@ -16,6 +17,7 @@ typedef struct
 {
 	Transform2D transform;
 	Rect2f texture_atlas_rect;
+	Color tint;
 } DrawableItem2D;
 
 void video_init(void);

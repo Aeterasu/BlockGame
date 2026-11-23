@@ -1,4 +1,5 @@
 #include "video.h"
+#include "color.h"
 #include "file.h"
 #include "log.h"
 #include "vector.h"
@@ -41,6 +42,7 @@ static GLint model_uniform = -1;
 static GLint atlas_size_uniform = -1;
 static GLint texture_offset_uniform = -1;
 static GLint sprite_size_uniform = -1;
+static GLint tint_uniform = -1;
 
 static DrawableItem2D drawables[MAX_DRAWABLE_ITEM_COUNT];
 static uint16_t active_drawables = 0;
@@ -110,6 +112,7 @@ void video_init(void)
 	atlas_size_uniform = glGetUniformLocation(shader_program, "u_atlas_size");
 	texture_offset_uniform = glGetUniformLocation(shader_program, "u_texture_offset");
 	sprite_size_uniform = glGetUniformLocation(shader_program, "u_sprite_size");
+	tint_uniform = glGetUniformLocation(shader_program, "u_tint");
 
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -213,9 +216,9 @@ void video_render_frame(void)
 	Rect2f r2 = {.size = {18.0f, 18.0f}, .position = {18.0f, 18.0f}};
 	Rect2f r3 = {.size = {18.0f, 18.0f}, .position = {18.0f, 0.0f}};
 
-	video_draw_item((DrawableItem2D){t1, r1});
-	video_draw_item((DrawableItem2D){t2, r2});
-	video_draw_item((DrawableItem2D){t3, r3});
+	video_draw_item((DrawableItem2D){t1, r1, color_black()});
+	video_draw_item((DrawableItem2D){t2, r2, color_white()});
+	video_draw_item((DrawableItem2D){t3, r3, color_white()});
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
@@ -233,9 +236,11 @@ void video_render_frame(void)
 
 		Vec2f offset = drawables[i].texture_atlas_rect.position;
 		Vec2f size = drawables[i].texture_atlas_rect.size;
+		Color tint = drawables[i].tint;
 
 		glUniform2f(texture_offset_uniform, offset.x, offset.y);
 		glUniform2f(sprite_size_uniform, size.x, size.y);
+		glUniform4f(tint_uniform, tint.r, tint.g, tint.b, tint.a);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 	}
 

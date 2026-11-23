@@ -10,6 +10,8 @@ uniform vec2 u_atlas_size;
 uniform vec2 u_texture_offset;
 uniform vec2 u_sprite_size;
 
+uniform vec4 u_tint;
+
 out vec4 v_color;
 out vec2 v_uv;
 
@@ -22,5 +24,5 @@ void main()
 
 	vec3 pos = u_projection * (u_model * vec3(a_position.xy, 1.0));
 	gl_Position = vec4(pos.xy, 0.0, 1.0);
-	v_color = vec4(a_uv.y, 0.0f, a_uv.x, 1.0f);
+	v_color = u_tint;
 }
