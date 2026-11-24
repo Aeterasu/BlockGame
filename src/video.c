@@ -208,18 +208,6 @@ void video_render_frame(void)
 {
 	Mat3f projection = mat3f_orthographic(0.0, 270.0f, 270.0f, 0.0f);
 
-	Transform2D t1 = {.position = {40.0f, 150.0f}, .scale = {26.0f, 26.0f}, .rotation = 0.5345f};
-	Transform2D t2 = {.position = {200.0f, 90.0f}, .scale = {65.0f, 65.0f}, .rotation = 4.345345f};
-	Transform2D t3 = {.position = {150.0f, 190.0f}, .scale = {16.0f, 16.0f}, .rotation = 0.145345f};
-
-	Rect2f r1 = {.size = {18.0f, 18.0f}, .position = {0.0f, 0.0f}};
-	Rect2f r2 = {.size = {18.0f, 18.0f}, .position = {18.0f, 18.0f}};
-	Rect2f r3 = {.size = {18.0f, 18.0f}, .position = {18.0f, 0.0f}};
-
-	video_draw_item((DrawableItem2D){t1, r1, color_black()});
-	video_draw_item((DrawableItem2D){t2, r2, color_white()});
-	video_draw_item((DrawableItem2D){t3, r3, color_white()});
-
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
 
@@ -228,11 +216,11 @@ void video_render_frame(void)
 	glBindTexture(GL_TEXTURE_2D, texture_atlas_sampler_id);
 	glUniform1i(texture_atlas_uniform, 0);
 	glUniformMatrix3fv(projection_uniform, 1, GL_FALSE, projection.m);
+	glUniform2f(atlas_size_uniform, 36.0f, 36.0f);
 
 	for (uint16_t i = 0; i < active_drawables; i++)
 	{
 		glUniformMatrix3fv(model_uniform, 1, GL_FALSE, mat3f_get_from_transform_2d(drawables[i].transform).m);
-		glUniform2f(atlas_size_uniform, 36.0f, 36.0f);
 
 		Vec2f offset = drawables[i].texture_atlas_rect.position;
 		Vec2f size = drawables[i].texture_atlas_rect.size;
