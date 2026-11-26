@@ -19,10 +19,24 @@
 
 #define VISUAL_DT_DISCARD_THRESHOLD 0.25
 
+#include "game.h"
+
+typedef enum
+{
+	GAME,
+	TITLE,
+	RANKING,
+	OPTIONS,
+} MainStateVariant;
+
 static bool is_running = true;
 
 static double accumulator = 0.0;
 static double previous_time = 0.0;
+
+MainStateVariant main_state = GAME;
+
+GameState game_state;
 
 double get_engine_time_seconds(void)
 {
@@ -37,11 +51,15 @@ static void teardown(void)
 
 static void gameplay_tick(double delta)
 {
+	game_fixed_tick(&game_state, delta);
 }
 
 static void visual_tick(double delta)
 {
 	video_clear_frame();
+
+	game_visual_tick(&game_state, delta);
+
 	video_render_frame();
 }
 
@@ -98,7 +116,11 @@ int main(int argc, char* argv[])
 	video_init();
 	video_upload_texture_atlas("asset/texture/texture_1.png");
 
+	video_set_clear_color(get_pico_white());
+
 	previous_time = get_engine_time_seconds();
+
+	game_init(&game_state);
 
 #ifdef __EMSCRIPTEN__
 	emscripten_set_main_loop(main_iterate, 0, 1);

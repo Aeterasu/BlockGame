@@ -10,8 +10,8 @@
 
 #define MAX_DRAWABLE_ITEM_COUNT 4096u
 
-#define DEFAULT_WINDOW_WIDTH 270u
-#define DEFAULT_WINDOW_HEIGHT 270u
+#define DEFAULT_WINDOW_WIDTH 240u
+#define DEFAULT_WINDOW_HEIGHT 320u
 
 typedef struct
 {
@@ -34,3 +34,5 @@ GLuint video_load_shader_program(const char* vertex_path, const char* fragment_p
 void video_upload_texture_atlas(const char* path);
 
 void video_draw_item(DrawableItem2D item);
+
+void video_set_clear_color(Color color);

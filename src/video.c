@@ -12,10 +12,10 @@ static GLfloat quad_vertices[] =
 {
 	// position, uv data
 	// x, y, z, u, v
-	-0.5f, -0.5f, 0.0f, 1.0f, 1.0f,
-	0.5f, -0.5f, 0.0f, 0.0f, 1.0f,
-	0.5f, 0.5f, 0.0f, 0.0f, 0.0f,
-	-0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
+	-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
+	0.5f, -0.5f, 0.0f, 1.0f, 0.0f,
+	0.5f, 0.5f, 0.0f, 1.0f, 1.0f,
+	-0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
 };
 
 static GLuint quad_indices[] =
@@ -47,6 +47,8 @@ static GLint tint_uniform = -1;
 static DrawableItem2D drawables[MAX_DRAWABLE_ITEM_COUNT];
 static uint16_t active_drawables = 0;
 static int drawable_limit_warned = 0;
+
+static Color clear_color = COLOR_BLACK_INIT;
 
 void video_init(void)
 {
@@ -198,7 +200,7 @@ void video_resize_viewport(void)
 
 void video_clear_frame(void)
 {
-	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+	glClearColor(clear_color.r, clear_color.g, clear_color.b, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	active_drawables = 0;
@@ -206,7 +208,7 @@ void video_clear_frame(void)
 
 void video_render_frame(void)
 {
-	Mat3f projection = mat3f_orthographic(0.0, 270.0f, 270.0f, 0.0f);
+	Mat3f projection = mat3f_orthographic(0.0, (float)DEFAULT_WINDOW_WIDTH, (float)DEFAULT_WINDOW_HEIGHT, 0.0f);
 
 	glUseProgram(shader_program);
 	glBindVertexArray(vao);
@@ -342,4 +344,14 @@ void video_draw_item(const DrawableItem2D item)
 	drawables[active_drawables] = item;
 
 	active_drawables++;
+}
+
+void video_set_clear_color(Color color)
+{
+	if (color.a < 1.0f)
+	{
+		color.a = 1.0f;
+	}
+
+	clear_color = color;
 }
